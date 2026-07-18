@@ -1,22 +1,36 @@
 import {
   Controller,
   Post,
-  UseInterceptors,
   UploadedFile,
-  Body,
+  UseInterceptors,
+  Param,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from './file-upload.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('FileUpload')
 @Controller('file-upload')
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
-  @Post()
+  @Post(':companyId')
   @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body('companyId') companyId: string,
+    @Param('companyId') companyId: string,
   ) {
     return this.fileUploadService.uploadFile(file, companyId);
   }

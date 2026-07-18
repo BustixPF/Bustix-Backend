@@ -16,6 +16,12 @@ export class CompaniesController {
     return this.companiesService.findAll();
   }
 
+  // 👇 pon el seeder ANTES del ':id'
+  @Get('seeder')
+  async seedCompanies() {
+    return this.companiesService.seedCompanies();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.companiesService.findOne(id);
