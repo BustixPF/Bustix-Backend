@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Document } from './entities/file-uplaod.entity';
@@ -8,7 +8,7 @@ import {
   UploadApiErrorResponse,
   v2 as cloudinary,
 } from 'cloudinary';
-import toStream from 'buffer-to-stream';
+import { Readable } from 'stream';
 
 @Injectable()
 export class FileUploadRepository {
@@ -28,12 +28,23 @@ export class FileUploadRepository {
     return new Promise((resolve, reject) => {
       const uploadStream = this.cloudinaryProvider.uploader.upload_stream(
         { resource_type: 'auto', folder: 'companies' },
-        (error: UploadApiErrorResponse, result: UploadApiResponse) => {
-          if (error || !result) return reject(error);
+        (error?: UploadApiErrorResponse, result?: UploadApiResponse) => {
+          if (error || !result) {
+            return reject(
+              new Error(error?.message || 'Error al subir a Cloudinary'),
+            );
+          }
           resolve(result);
         },
       );
-      (toStream(file.buffer) as NodeJS.ReadableStream).pipe(uploadStream);
+
+      if (!file || !file.buffer) {
+        return reject(new Error('El archivo no tiene buffer'));
+      }
+
+      // Usamos la API oficial de Node para crear el stream
+      const stream = Readable.from(file.buffer);
+      stream.pipe(uploadStream);
     });
   }
 
@@ -45,7 +56,9 @@ export class FileUploadRepository {
     const company = await this.companyRepo.findOne({
       where: { id: companyId },
     });
-    if (!company) throw new Error('Empresa no encontrada');
+    if (!company) {
+      throw new NotFoundException(`Empresa con id ${companyId} no encontrada`);
+    }
 
     const result = await this.uploadToCloudinary(file);
 

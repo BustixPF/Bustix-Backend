@@ -13,7 +13,7 @@ export class Company {
   nit: string;
 
   @Column()
-  contactEmail: string;
+  email: string;
 
   @OneToMany(() => Document, (document) => document.company)
   documents: Document[];

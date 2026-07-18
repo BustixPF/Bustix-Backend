@@ -19,7 +19,7 @@ export class CompaniesRepository implements OnModuleInit {
           const company = this.companyRepo.create({
             name: element.name,
             nit: element.nit,
-            contactEmail: element.contactEmail,
+            email: element.email,
           });
 
           await this.companyRepo
@@ -27,13 +27,13 @@ export class CompaniesRepository implements OnModuleInit {
             .insert()
             .into(Company)
             .values(company)
-            .orUpdate(['nit', 'contactEmail'], ['name'])
+            .orUpdate(['nit', 'email'], ['name'])
             .execute();
         }),
       );
       console.log('✅ Empresas de prueba cargadas automáticamente');
     } else {
-      console.log('❌ Hay un conflicto y no se ejecutó el seeder');
+      console.log('ℹ️ Empresas ya existen, seeder no ejecutado');
     }
   }
 }
