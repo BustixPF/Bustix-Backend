@@ -1,0 +1,41 @@
+import { DataSource } from 'typeorm';
+import { User } from '../users/entities/user.entity';
+export declare const config: {
+    type: string;
+    host: string;
+    port: number;
+    username: string | undefined;
+    password: string | undefined;
+    database: string | undefined;
+    entities: (typeof User)[];
+    migrations: string[];
+    synchronize: boolean;
+    logging: boolean;
+    dropSchema: boolean;
+};
+export declare const typeOrmConfig: (() => {
+    type: string;
+    host: string;
+    port: number;
+    username: string | undefined;
+    password: string | undefined;
+    database: string | undefined;
+    entities: (typeof User)[];
+    migrations: string[];
+    synchronize: boolean;
+    logging: boolean;
+    dropSchema: boolean;
+}) & import("@nestjs/config").ConfigFactoryKeyHost<{
+    type: string;
+    host: string;
+    port: number;
+    username: string | undefined;
+    password: string | undefined;
+    database: string | undefined;
+    entities: (typeof User)[];
+    migrations: string[];
+    synchronize: boolean;
+    logging: boolean;
+    dropSchema: boolean;
+}>;
+export declare const connectionSource: DataSource;
