@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
@@ -68,14 +67,5 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar un usuario' })
-  @ApiParam({ name: 'id', description: 'UUID del usuario' })
-  @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.remove(id);
   }
 }

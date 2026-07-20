@@ -86,13 +86,4 @@ export class UsersRepository {
     void password;
     return userNoPassword;
   }
-
-  async deleteUser(id: string): Promise<string> {
-    const foundUser = await this.usersOrmRepository.findOneBy({ id });
-    if (!foundUser) {
-      throw new NotFoundException(`No existe usuario con id ${id}`);
-    }
-    await this.usersOrmRepository.remove(foundUser);
-    return foundUser.id;
-  }
 }
