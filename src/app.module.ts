@@ -1,11 +1,35 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { typeOrmConfig } from './config/typeorm';
+
+import { CompaniesModule } from './companies/companies.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [UsersModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    // Config global
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [typeOrmConfig],
+    }),
+
+    // Inicialización de TypeORM con config
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
+        return configService.get<TypeOrmModuleOptions>('typeorm')!;
+      },
+    }),
+
+    //módulos de negocio
+    AuthModule,
+    CompaniesModule,
+    FileUploadModule,
+    AuthModule,
+  ],
 })
 export class AppModule {}
