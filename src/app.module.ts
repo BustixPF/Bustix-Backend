@@ -5,7 +5,6 @@ import { typeOrmConfig } from './config/typeorm';
 
 import { CompaniesModule } from './companies/companies.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
-import { VettingModule } from './companies-vetting/vetting.module';
 
 @Module({
   imports: [
@@ -27,7 +26,6 @@ import { VettingModule } from './companies-vetting/vetting.module';
     //módulos de negocio
     CompaniesModule,
     FileUploadModule,
-    VettingModule,
   ],
 })
 export class AppModule {}

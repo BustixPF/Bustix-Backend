@@ -11,7 +11,11 @@ async function bootstrap() {
     .setDescription('Aplicacion creada con NestJS')
     .setVersion('1.0.0')
     .addBearerAuth()
-    .setContact('BusTix', 'https://github.com/Bustix', 'bustix@gmail.com')
+    .setContact(
+      'BusTix',
+      'https://github.com/BustixPF/Bustix-Backend',
+      'bustix@gmail.com',
+    )
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

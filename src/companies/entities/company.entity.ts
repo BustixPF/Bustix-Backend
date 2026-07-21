@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Document } from '../../file-upload/entities/file-uplaod.entity';
 
-@Entity('companies')
+@Entity('COMPANIES')
 export class Company {
   @PrimaryGeneratedColumn('uuid')
   id: string;
