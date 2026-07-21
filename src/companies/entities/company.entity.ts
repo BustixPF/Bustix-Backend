@@ -1,19 +1,19 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Document } from '../../file-upload/entities/file-uplaod.entity';
 
-@Entity('companies')
+@Entity('COMPANIES')
 export class Company {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column()
   nit: string;
 
   @Column()
-  contactEmail: string;
+  email: string;
 
   @OneToMany(() => Document, (document) => document.company)
   documents: Document[];

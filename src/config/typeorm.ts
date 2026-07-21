@@ -1,4 +1,3 @@
-
 import { registerAs } from '@nestjs/config';
 import { environment } from './environment';
 import { DataSource, DataSourceOptions } from 'typeorm';

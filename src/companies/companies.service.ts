@@ -10,25 +10,24 @@ export class CompaniesService {
     private readonly companyRepo: Repository<Company>,
   ) {}
 
+  // Crear empresa
   async createCompany(data: Partial<Company>) {
     const company = this.companyRepo.create(data);
     return this.companyRepo.save(company);
   }
 
+  // Listar todas las empresas con sus documentos
   async findAll() {
     return this.companyRepo.find({
-      relations: {
-        documents: true,
-      },
+      relations: { documents: true },
     });
   }
 
+  // Buscar una empresa por ID con sus documentos
   async findOne(id: string) {
     return this.companyRepo.findOne({
       where: { id },
-      relations: {
-        documents: true,
-      },
+      relations: { documents: true },
     });
   }
 }

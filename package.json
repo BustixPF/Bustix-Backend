@@ -23,6 +23,7 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
+<<<<<<< HEAD
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.4.5",
@@ -33,6 +34,14 @@
     "class-validator": "^0.15.1",
     "cloudinary": "^2.10.0",
     "dotenv": "^17.4.2",
+=======
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.4.6",
+    "@nestjs/typeorm": "^11.0.3",
+    "buffer-to-stream": "^1.0.0",
+    "cloudinary": "^2.10.0",
+    "multer-storage-cloudinary": "^2.2.1",
+>>>>>>> 5e59581a402714664ba41878dd4cabb3b6eb031c
     "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
