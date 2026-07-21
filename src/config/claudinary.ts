@@ -9,5 +9,5 @@ cloudinary.config({
 
 export const CloudinaryConfig = {
   provide: 'CLOUDINARY',
-  useFactory: () => cloudinary, // 👈 devolvemos el cliente, no la config
+  useFactory: () => cloudinary,
 };
