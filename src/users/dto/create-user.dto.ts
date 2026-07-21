@@ -34,6 +34,14 @@ export class CreateUserDto {
   email!: string;
 
   /**
+   * Teléfono de contacto
+   * @example 1123456789
+   */
+  @IsInt({ message: 'El teléfono debe ser un número' })
+  @IsNotEmpty({ message: 'El teléfono es obligatorio' })
+  phone!: number;
+
+  /**
    * La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo
    * @example 'aaBB33##'
    */
@@ -74,14 +82,6 @@ export class CreateUserDto {
   dni!: number;
 
   /**
-   * Teléfono de contacto
-   * @example 1123456789
-   */
-  @IsInt({ message: 'El teléfono debe ser un número' })
-  @IsNotEmpty({ message: 'El teléfono es obligatorio' })
-  phone!: number;
-
-  /**
    * Dirección, opcional
    * @example 'Calle Falsa 123'
    */
@@ -100,5 +100,3 @@ export class CreateUserDto {
   @IsEmpty()
   role?: Role;
 }
-
-//agrego comentario para probar el commit

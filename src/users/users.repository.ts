@@ -39,9 +39,8 @@ export class UsersRepository {
     return userNoPassword;
   }
 
-  /** Devuelve el user completo (con password) — lo va a usar el módulo de auth más adelante */
   async getUserByEmail(email: string): Promise<User | null> {
-    return this.usersOrmRepository.findOneBy({ email });
+    return await this.usersOrmRepository.findOneBy({ email });
   }
 
   async addUser(newUserData: CreateUserDto): Promise<Omit<User, 'password'>> {
