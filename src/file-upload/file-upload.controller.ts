@@ -8,6 +8,7 @@ import {
 import { FileUploadService } from './file-upload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
+import { updateFileUserDecorator, uploadToCloudinaryDecorator } from './file-upload.decorator';
 
 @ApiTags('FileUpload')
 @Controller('file-upload')
@@ -15,6 +16,7 @@ export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('company/:companyId')
+  @uploadToCloudinaryDecorator()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -36,6 +38,7 @@ export class FileUploadController {
   }
 
   @Post('user/:userId')
+  @updateFileUserDecorator()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm';
 
@@ -28,6 +29,7 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     CompaniesModule,
     FileUploadModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

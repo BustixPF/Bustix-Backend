@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-dotenv.config({ path: 'src/.env.development' });
+dotenv.config({ path: '.env.development' });
 
 export const environment = {
   HOST: process.env.HOST || 'localhost',
@@ -8,8 +8,8 @@ export const environment = {
   DB_NAME: process.env.DB_NAME || 'bustix_db',
   DB_HOST: process.env.DB_HOST || 'localhost',
   DB_PORT: process.env.DB_PORT || '5432',
-  DB_USERNAME: process.env.DB_USERNAME || 'user',
-  DB_PASSWORD: process.env.DB_PASSWORD || 'password',
+  DB_USERNAME: process.env.DB_USERNAME || 'postgres',
+  DB_PASSWORD: process.env.DB_PASSWORD || 'fortuodriozola',
 
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
