@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.development' });
+dotenv.config({ path: 'src/.env.development' });
 
 export const environment = {
   HOST: process.env.HOST || 'localhost',
