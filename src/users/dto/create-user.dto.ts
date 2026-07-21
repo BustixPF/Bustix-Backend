@@ -2,6 +2,7 @@ import { ApiHideProperty } from '@nestjs/swagger';
 import { IsEmail, IsEmpty, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsStrongPassword, MaxLength, MinLength, Validate } from 'class-validator';
 import { Role } from '../../common/roles.enum';
 
+
 export class CreateUserDto {
 
 
