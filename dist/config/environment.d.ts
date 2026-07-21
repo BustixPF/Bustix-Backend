@@ -1,9 +1,13 @@
 export declare const environment: {
     HOST: string;
     PORT: string | number;
-    DB_NAME: string | undefined;
+    DB_NAME: string;
     DB_HOST: string;
-    DB_PORT: string | number;
-    DB_USERNAME: string | undefined;
-    DB_PASSWORD: string | undefined;
+    DB_PORT: string;
+    DB_USERNAME: string;
+    DB_PASSWORD: string;
+    CLOUDINARY_CLOUD_NAME: string | undefined;
+    CLOUDINARY_API_KEY: string | undefined;
+    CLOUDINARY_API_SECRET: string | undefined;
+    JWT_SECRET: string | undefined;
 };

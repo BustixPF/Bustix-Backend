@@ -8,5 +8,4 @@ export declare class UsersService {
     findAll(page: number, limit: number): Promise<Omit<import("./entities/user.entity").User, "password">[]>;
     findOne(id: string): Promise<Omit<import("./entities/user.entity").User, "password">>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<Omit<import("./entities/user.entity").User, "password">>;
-    remove(id: string): Promise<string>;
 }

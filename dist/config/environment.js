@@ -35,14 +35,18 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.environment = void 0;
 const dotenv = __importStar(require("dotenv"));
-dotenv.config();
+dotenv.config({ path: '.env.development' });
 exports.environment = {
     HOST: process.env.HOST || 'localhost',
     PORT: process.env.PORT || 3000,
-    DB_NAME: process.env.DB_NAME,
+    DB_NAME: process.env.DB_NAME || 'bustix_db',
     DB_HOST: process.env.DB_HOST || 'localhost',
-    DB_PORT: process.env.DB_PORT || 5432,
-    DB_USERNAME: process.env.DB_USERNAME,
-    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_PORT: process.env.DB_PORT || '5432',
+    DB_USERNAME: process.env.DB_USERNAME || 'user',
+    DB_PASSWORD: process.env.DB_PASSWORD || 'password',
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+    JWT_SECRET: process.env.JWT_SECRET,
 };
 //# sourceMappingURL=environment.js.map

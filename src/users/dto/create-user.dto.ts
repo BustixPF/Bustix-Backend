@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 import { ApiHideProperty } from '@nestjs/swagger';
 import { MatchPassword } from '../validators/match-password.validator';
-import { Role } from '../../common/enums/role.enum';
+import { Role } from '../../common/roles.enum';
 
 export class CreateUserDto {
   /**
@@ -94,7 +94,6 @@ export class CreateUserDto {
   address?: string;
 
   /**
-   * El rol no lo define el cliente: siempre se crea como "passenger".
    * Se vuelve "admin" solo por acción manual/administrativa.
    */
   @ApiHideProperty()

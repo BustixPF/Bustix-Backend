@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const openapi = require("@nestjs/swagger");
 const typeorm_1 = require("typeorm");
-const role_enum_1 = require("../../common/enums/role.enum");
+const roles_enum_1 = require("../../common/roles.enum");
 let User = class User {
     id;
     name;
@@ -23,7 +23,7 @@ let User = class User {
     address;
     role;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => String, description: "uuid v4 generado por la base de datos" }, name: { required: true, type: () => String, description: "Nombre completo del usuario", example: "Santiago Burke" }, email: { required: true, type: () => String, description: "Email \u00FAnico, usado para login", example: "example@mail.com" }, password: { required: true, type: () => String, description: "Password hasheado (nunca se guarda en texto plano)" }, dni: { required: true, type: () => Number, description: "DNI / documento de identidad, \u00FAnico. Necesario para emitir el ticket de bus.", example: 40123456 }, phone: { required: true, type: () => Number, description: "Tel\u00E9fono de contacto", example: 1123456789 }, address: { required: false, type: () => String, description: "Direcci\u00F3n, opcional", example: "Calle Falsa 123" }, role: { required: true, description: "Rol del usuario dentro del sistema", enum: require("../../common/enums/role.enum").Role } };
+        return { id: { required: true, type: () => String, description: "uuid v4 generado por la base de datos" }, name: { required: true, type: () => String, description: "Nombre completo del usuario", example: "Santiago Burke" }, email: { required: true, type: () => String, description: "Email \u00FAnico, usado para login", example: "example@mail.com" }, password: { required: true, type: () => String, description: "Password hasheado (nunca se guarda en texto plano)" }, dni: { required: true, type: () => Number, description: "DNI / documento de identidad, \u00FAnico. Necesario para emitir el ticket de bus.", example: 40123456 }, phone: { required: true, type: () => Number, description: "Tel\u00E9fono de contacto", example: 1123456789 }, address: { required: false, type: () => String, description: "Direcci\u00F3n, opcional", example: "Calle Falsa 123" }, role: { required: true, description: "Rol del usuario dentro del sistema", enum: require("../../common/roles.enum").Role } };
     }
 };
 exports.User = User;
@@ -56,7 +56,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "address", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: role_enum_1.Role, default: role_enum_1.Role.Passenger }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: roles_enum_1.Role, default: roles_enum_1.Role.User }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 exports.User = User = __decorate([

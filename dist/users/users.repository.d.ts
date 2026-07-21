@@ -10,5 +10,4 @@ export declare class UsersRepository {
     getUserByEmail(email: string): Promise<User | null>;
     addUser(newUserData: CreateUserDto): Promise<Omit<User, 'password'>>;
     updateUser(id: string, newUserData: UpdateUserDto): Promise<Omit<User, 'password'>>;
-    deleteUser(id: string): Promise<string>;
 }

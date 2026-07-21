@@ -29,9 +29,6 @@ let UsersService = class UsersService {
     update(id, updateUserDto) {
         return this.usersRepository.updateUser(id, updateUserDto);
     }
-    remove(id) {
-        return this.usersRepository.deleteUser(id);
-    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

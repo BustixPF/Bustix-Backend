@@ -10,25 +10,31 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
-const app_controller_1 = require("./app.controller");
-const app_service_1 = require("./app.service");
-const users_module_1 = require("./users/users.module");
 const typeorm_2 = require("./config/typeorm");
+const companies_module_1 = require("./companies/companies.module");
+const file_upload_module_1 = require("./file-upload/file-upload.module");
+const auth_module_1 = require("./auth/auth.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true, load: [typeorm_2.typeOrmConfig] }),
-            typeorm_1.TypeOrmModule.forRootAsync({
-                inject: [config_1.ConfigService],
-                useFactory: (configService) => configService.get('typeorm'),
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+                load: [typeorm_2.typeOrmConfig],
             }),
-            users_module_1.UsersModule,
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [config_1.ConfigModule],
+                inject: [config_1.ConfigService],
+                useFactory: (configService) => {
+                    return configService.get('typeorm');
+                },
+            }),
+            companies_module_1.CompaniesModule,
+            file_upload_module_1.FileUploadModule,
+            auth_module_1.AuthModule,
         ],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

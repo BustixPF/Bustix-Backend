@@ -109,14 +109,6 @@ let UsersRepository = class UsersRepository {
         void password;
         return userNoPassword;
     }
-    async deleteUser(id) {
-        const foundUser = await this.usersOrmRepository.findOneBy({ id });
-        if (!foundUser) {
-            throw new common_1.NotFoundException(`No existe usuario con id ${id}`);
-        }
-        await this.usersOrmRepository.remove(foundUser);
-        return foundUser.id;
-    }
 };
 exports.UsersRepository = UsersRepository;
 exports.UsersRepository = UsersRepository = __decorate([
