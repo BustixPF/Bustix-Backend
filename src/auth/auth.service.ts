@@ -1,19 +1,22 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
-import { Role } from "../common/roles.enum";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
+import { Role } from '../common/roles.enum';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from "../users/dto/create-user.dto";
-import { UsersRepository } from "../users/users.repository";
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UsersRepository } from '../users/users.repository';
 
 @Injectable()
-export class AuthService{
-    constructor(
-        private readonly jwtService: JwtService,
-        private readonly usersRepository: UsersRepository,) {}
+export class AuthService {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
-
- async signIn(email: string, password: string) {
-
+  async signIn(email: string, password: string) {
     const cleanEmail = email.trim().toLowerCase();
     const user = await this.usersRepository.getUserByEmail(cleanEmail);
 
@@ -26,13 +29,13 @@ export class AuthService{
     if (!isPasswordMatching) {
       throw new BadRequestException('Email o password incorrectos');
     }
-    
+
     const payload = {
       id: user.id,
       email: user.email,
-      roles: user.isAdmin ? [Role.Admin] : [Role.User],
+      roles: user.role === Role.Admin ? [Role.Admin] : [Role.User],
     };
-    
+
     const token = this.jwtService.sign(payload);
 
     return {
@@ -54,10 +57,10 @@ export class AuthService{
     user.password = await bcrypt.hash(user.password, 10);
     const newUser = await this.usersRepository.addUser(user);
     const { password, confirmPassword, ...userWithoutPassword } = user;
-   return {
-  id: newUser,
-  email: user.email,
-  message: 'Usuario registrado con éxito'
-};
+    return {
+      id: newUser,
+      email: user.email,
+      message: 'Usuario registrado con éxito',
+    };
   }
 }

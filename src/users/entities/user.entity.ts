@@ -1,34 +1,58 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Role } from '../../common/roles.enum';
 
-
 @Entity({ name: 'users' })
 export class User {
+  /**
+   * uuid v4 generado por la base de datos
+   */
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  /**
+   * Nombre completo del usuario
+   * @example 'Santiago Burke'
+   */
+  @Column({ type: 'varchar', length: 80, nullable: false })
   name: string;
 
-  @Column({ type: 'varchar', unique: true })
+  /**
+   * Email único, usado para login
+   * @example 'example@mail.com'
+   */
+  @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
   email: string;
 
-  @Column({ type: 'varchar' })
+  /**
+   * Password hasheado (nunca se guarda en texto plano)
+   */
+  @Column({ type: 'varchar', length: 60, nullable: false })
   password: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  dni: string;
+  /**
+   * DNI / documento de identidad, único. Necesario para emitir el ticket de bus.
+   * @example 40123456
+   */
+  @Column({ type: 'int', unique: true, nullable: false })
+  dni: number;
 
-  @Column({ type: 'varchar', nullable: true })
-  phone: string;
+  /**
+   * Teléfono de contacto
+   * @example 1123456789
+   */
+  @Column({ type: 'int', nullable: false })
+  phone: number;
 
+  /**
+   * Dirección, opcional
+   * @example 'Calle Falsa 123'
+   */
   @Column({ type: 'text', nullable: true })
-  address: string;
+  address?: string;
 
-  @Column({
-    type: 'enum',
-    enum: Role,
-    default: Role.User,
-  })
+  /**
+   * Rol del usuario dentro del sistema
+   */
+  @Column({ type: 'enum', enum: Role, default: Role.User })
   role: Role;
 }
