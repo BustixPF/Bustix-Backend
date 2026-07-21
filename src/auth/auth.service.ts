@@ -1,9 +1,11 @@
-import { BadRequestException, ConflictException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import { Role } from "../common/roles.enum";
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from "../users/dto/create-user.dto";
+import { UsersRepository } from "../users/users.repository";
 
+@Injectable()
 export class AuthService{
     constructor(
         private readonly jwtService: JwtService,
@@ -52,9 +54,10 @@ export class AuthService{
     user.password = await bcrypt.hash(user.password, 10);
     const newUser = await this.usersRepository.addUser(user);
     const { password, confirmPassword, ...userWithoutPassword } = user;
-    return {
-      ...userWithoutPassword,
-      id: newUser,
-    };
+   return {
+  id: newUser,
+  email: user.email,
+  message: 'Usuario registrado con éxito'
+};
   }
 }
