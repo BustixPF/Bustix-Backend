@@ -44,27 +44,23 @@ export class UsersRepository {
   }
 
   async addUser(newUserData: CreateUserDto): Promise<Omit<User, 'password'>> {
-    const existing = await this.usersOrmRepository.findOneBy({
-      email: newUserData.email,
-    });
-    if (existing) {
-      throw new ConflictException('Ya existe un usuario con ese email');
-    }
-
-    const { confirmPassword, ...userData } = newUserData;
-    void confirmPassword;
-
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-
-    const user = this.usersOrmRepository.create({
-      ...userData,
-      password: hashedPassword,
-    });
-    const savedUser = await this.usersOrmRepository.save(user);
-    const { password, ...userNoPassword } = savedUser;
-    void password;
-    return userNoPassword;
+  const existing = await this.usersOrmRepository.findOneBy({
+    email: newUserData.email,
+  });
+  if (existing) {
+    throw new ConflictException('Ya existe un usuario con ese email');
   }
+
+  const { confirmPassword, ...userData } = newUserData;
+  void confirmPassword;
+
+  const user = this.usersOrmRepository.create(userData);
+  const savedUser = await this.usersOrmRepository.save(user);
+  
+  const { password, ...userNoPassword } = savedUser;
+  void password;
+  return userNoPassword;
+}
 
   async updateUser(
     id: string,

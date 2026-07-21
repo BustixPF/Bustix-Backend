@@ -18,6 +18,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { createUsersDecorator, getAllUsersDecorator, getUsersByIdDecorator, updateUsersDecorator } from './users.decorator';
 
 @ApiTags('users')
 @Controller('users')
@@ -25,18 +26,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Crear un nuevo usuario' })
-  @ApiResponse({ status: 201, description: 'Usuario creado correctamente' })
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @createUsersDecorator()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar usuarios (paginado)' })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiResponse({ status: 200, description: 'Listado de usuarios' })
+  @getAllUsersDecorator()
   findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
     const pageNum = Number(page) || 1;
     const limitNum = Number(limit) || 10;
@@ -46,22 +42,13 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener un usuario por ID' })
-  @ApiParam({ name: 'id', description: 'UUID del usuario' })
-  @ApiResponse({ status: 200, description: 'Usuario encontrado' })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+@getUsersByIdDecorator()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un usuario' })
-  @ApiParam({ name: 'id', description: 'UUID del usuario' })
-  @ApiResponse({
-    status: 200,
-    description: 'Usuario actualizado correctamente',
-  })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+@updateUsersDecorator()
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,

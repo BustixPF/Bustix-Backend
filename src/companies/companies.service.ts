@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
@@ -18,16 +18,28 @@ export class CompaniesService {
 
   // Listar todas las empresas con sus documentos
   async findAll() {
-    return this.companyRepo.find({
+    const companies = await this.companyRepo.find({
       relations: { documents: true },
     });
+
+    if(!companies) {
+      throw new BadRequestException('Error al obtener las compañías')
+    }
+
+    return companies
   }
 
   // Buscar una empresa por ID con sus documentos
   async findOne(id: string) {
-    return this.companyRepo.findOne({
+    const companies = await this.companyRepo.findOne({
       where: { id },
       relations: { documents: true },
     });
+
+    if(!companies) {
+      throw new BadRequestException('Error al obtener las compañías mediante su id')
+    }
+    
+    return companies
   }
 }
