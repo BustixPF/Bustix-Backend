@@ -14,6 +14,7 @@ import { ApiHideProperty } from '@nestjs/swagger';
 import { MatchPassword } from '../validators/match-password.validator';
 import { Role } from '../../common/roles.enum';
 
+
 export class CreateUserDto {
   /**
    * Nombre completo del usuario

@@ -26,6 +26,7 @@ import { AuthModule } from './auth/auth.module';
     }),
 
     //módulos de negocio
+    AuthModule,
     CompaniesModule,
     FileUploadModule,
     AuthModule,
