@@ -1,4 +1,4 @@
-import { applyDecorators, HttpCode, UseGuards } from '@nestjs/common';
+import { applyDecorators, HttpCode } from '@nestjs/common';
 
 import {
   ApiBearerAuth,
@@ -11,7 +11,7 @@ import {
 export function createUsersDecorator() {
   return applyDecorators(
     ApiOperation({
-    summary: 'Crear un nuevo usuario',
+      summary: 'Crear un nuevo usuario',
     }),
     ApiResponse({ status: 201, description: 'Usuario creado correctamente' }),
     ApiResponse({ status: 400, description: 'Datos inválidos' }),
@@ -22,7 +22,7 @@ export function createUsersDecorator() {
 export function getAllUsersDecorator() {
   return applyDecorators(
     ApiOperation({
-    summary: 'Listar usuarios (paginado)',
+      summary: 'Listar usuarios (paginado)',
       description:
         'Recibe la lista por QueryParams, limit(cantidad de usuarios de la pagina) y page (pagina de la lista)',
     }),
@@ -78,6 +78,6 @@ export function updateUsersDecorator() {
       schema: { type: 'string', format: 'string' },
     }),
     ApiBearerAuth(),
-    HttpCode(200)
+    HttpCode(200),
   );
 }
