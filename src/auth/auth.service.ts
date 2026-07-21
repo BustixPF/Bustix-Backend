@@ -20,18 +20,15 @@ export class AuthService {
     const cleanEmail = email.trim().toLowerCase();
     const user = await this.usersRepository.getUserByEmail(cleanEmail);
 
-
     if (!user) {
       throw new BadRequestException('Email o password incorrectos');
     }
-    
 
     const isPasswordMatching = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatching) {
       throw new BadRequestException('Email o password incorrectos');
     }
-
 
     const payload = {
       id: user.id,
@@ -74,4 +71,3 @@ export class AuthService {
     };
   }
 }
-

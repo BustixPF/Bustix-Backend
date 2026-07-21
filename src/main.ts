@@ -6,6 +6,13 @@ import { environment } from './config/environment';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  //Habilitar CORS para tu frontend en 3001
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    methods: 'GET,POST,PUT,DELETE',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('BusTix API')
     .setDescription('Aplicacion creada con NestJS')
@@ -17,13 +24,16 @@ async function bootstrap() {
       'bustix@gmail.com',
     )
     .build();
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
   const HOST = environment.HOST;
   const PORT = environment.PORT;
+
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Servidor escuchando en http://${HOST}:${PORT}/`);
 }
+
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
