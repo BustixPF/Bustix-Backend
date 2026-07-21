@@ -2,22 +2,20 @@ import { registerAs } from '@nestjs/config';
 import { environment } from './environment';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
-const config = {
+const config: DataSourceOptions = {
   type: 'postgres',
-  database: environment.DB_NAME,
   host: environment.DB_HOST,
-  // host: 'postgresdb',
   port: Number(environment.DB_PORT),
   username: environment.DB_USERNAME,
   password: environment.DB_PASSWORD,
+  database: environment.DB_NAME,
   entities: ['dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
-  autoLoadEntities: true,
   logging: false,
-  synchronize: true,
-  dropSchema: true,
+  synchronize: false, // ⚠️ usa migraciones en producción
+  dropSchema: false, // ⚠️ evita que borre todo al reiniciar
 };
 
 export const typeOrmConfig = registerAs('typeorm', () => config);
 
-export const connectionSource = new DataSource(config as DataSourceOptions);
+export const connectionSource = new DataSource(config);
