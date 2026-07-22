@@ -44,22 +44,29 @@ export class AuthService {
     };
   }
 
-  async signUp(user: CreateUserDto) {
-    user.email = user.email.trim().toLowerCase();
+  async signUp(userDto: CreateUserDto) {
+    const cleanEmail = userDto.email.trim().toLowerCase();
 
-    const existUser = await this.usersRepository.getUserByEmail(user.email);
+    const existUser = await this.usersRepository.getUserByEmail(cleanEmail);
     if (existUser) {
-      throw new ConflictException(409);
+      throw new ConflictException('El usuario ya existe');
     }
-    if (user.password !== user.confirmPassword) {
+
+    if (userDto.password !== userDto.confirmPassword) {
       throw new BadRequestException('Las contraseñas no coinciden');
     }
-    user.password = await bcrypt.hash(user.password, 10);
-    const newUser = await this.usersRepository.addUser(user);
-    const { password, confirmPassword, ...userWithoutPassword } = user;
+
+    const hashedPassword = await bcrypt.hash(userDto.password, 10);
+
+    // Guardamos con la clave hasheada
+    const newUser = await this.usersRepository.addUser({
+      ...userDto,
+      email: cleanEmail,
+      password: hashedPassword,
+    });
+
     return {
       id: newUser,
-      email: user.email,
       message: 'Usuario registrado con éxito',
     };
   }

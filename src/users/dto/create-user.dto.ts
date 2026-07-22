@@ -14,7 +14,6 @@ import { ApiHideProperty } from '@nestjs/swagger';
 import { MatchPassword } from '../validators/match-password.validator';
 import { Role } from '../../common/roles.enum';
 
-
 export class CreateUserDto {
   /**
    * Nombre completo del usuario
@@ -33,6 +32,26 @@ export class CreateUserDto {
   @IsEmail({}, { message: 'El email debe ser un email válido' })
   @IsNotEmpty({ message: 'El email es obligatorio' })
   email!: string;
+
+  /**
+   * DNI / documento de identidad, requerido para emitir el ticket
+   * @example 40123456
+   */
+  @IsInt({ message: 'El DNI debe ser un número entero' })
+  @IsNotEmpty({ message: 'El DNI es obligatorio' })
+  dni!: number;
+
+  /**
+   * Teléfono de contacto
+   * @example 1123456789
+   */
+  @IsInt({ message: 'El teléfono debe ser un número' })
+  @IsNotEmpty({ message: 'El teléfono es obligatorio' })
+  @MinLength(8, { message: 'El teléfono debe tener al menos 8 caracteres' })
+  @MaxLength(15, {
+    message: 'El teléfono no puede tener más de 15 caracteres',
+  })
+  phone!: number;
 
   /**
    * La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo
@@ -65,22 +84,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Validate(MatchPassword, ['password'])
   confirmPassword!: string;
-
-  /**
-   * DNI / documento de identidad, requerido para emitir el ticket
-   * @example 40123456
-   */
-  @IsInt({ message: 'El DNI debe ser un número entero' })
-  @IsNotEmpty({ message: 'El DNI es obligatorio' })
-  dni!: number;
-
-  /**
-   * Teléfono de contacto
-   * @example 1123456789
-   */
-  @IsInt({ message: 'El teléfono debe ser un número' })
-  @IsNotEmpty({ message: 'El teléfono es obligatorio' })
-  phone!: number;
 
   /**
    * Dirección, opcional

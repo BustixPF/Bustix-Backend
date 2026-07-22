@@ -39,9 +39,8 @@ export class UsersRepository {
     return userNoPassword;
   }
 
-  /** Devuelve el user completo (con password) — lo va a usar el módulo de auth más adelante */
   async getUserByEmail(email: string): Promise<User | null> {
-    return this.usersOrmRepository.findOneBy({ email });
+    return await this.usersOrmRepository.findOneBy({ email });
   }
 
   async addUser(newUserData: CreateUserDto): Promise<Omit<User, 'password'>> {
@@ -55,13 +54,9 @@ export class UsersRepository {
     const { confirmPassword, ...userData } = newUserData;
     void confirmPassword;
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-
-    const user = this.usersOrmRepository.create({
-      ...userData,
-      password: hashedPassword,
-    });
+    const user = this.usersOrmRepository.create(userData);
     const savedUser = await this.usersOrmRepository.save(user);
+
     const { password, ...userNoPassword } = savedUser;
     void password;
     return userNoPassword;
