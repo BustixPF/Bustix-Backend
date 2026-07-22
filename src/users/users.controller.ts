@@ -8,19 +8,16 @@ import {
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiParam,
-} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { createUsersDecorator, getAllUsersDecorator, getUsersByIdDecorator, updateUsersDecorator } from './users.decorator';
+import {
+  createUsersDecorator,
+  getAllUsersDecorator,
+  getUsersByIdDecorator,
+  updateUsersDecorator,
+} from './users.decorator';
 
-@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -42,13 +39,13 @@ export class UsersController {
   }
 
   @Get(':id')
-@getUsersByIdDecorator()
+  @getUsersByIdDecorator()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
-@updateUsersDecorator()
+  @updateUsersDecorator()
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
