@@ -47,10 +47,6 @@ export class CreateUserDto {
    */
   @IsInt({ message: 'El teléfono debe ser un número' })
   @IsNotEmpty({ message: 'El teléfono es obligatorio' })
-  @MinLength(8, { message: 'El teléfono debe tener al menos 8 caracteres' })
-  @MaxLength(15, {
-    message: 'El teléfono no puede tener más de 15 caracteres',
-  })
   phone!: number;
 
   /**
