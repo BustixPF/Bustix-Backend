@@ -26,22 +26,22 @@ export class User {
   /**
    * Password hasheado (nunca se guarda en texto plano)
    */
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   password: string;
 
   /**
    * DNI / documento de identidad, único. Necesario para emitir el ticket de bus.
    * @example 40123456
    */
-  @Column({ type: 'int', unique: true, nullable: false })
-  dni: number;
+  @Column({ type: 'int', unique: true, nullable: true })
+  dni?: number;
 
   /**
    * Teléfono de contacto
    * @example 1123456789
    */
-  @Column({ type: 'int', nullable: false })
-  phone: number;
+  @Column({ type: 'int', nullable: true })
+  phone?: number;
 
   /**
    * Dirección, opcional

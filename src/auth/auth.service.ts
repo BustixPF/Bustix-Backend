@@ -16,6 +16,44 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
+   async googleLogin(reqUser: any) {
+  
+    if (!reqUser) {
+      throw new BadRequestException('No se recibieron datos del usuario desde Google');
+    }
+
+    const { email, firstName, lastName, picture, accessToken } = reqUser;
+
+    let user = await this.usersRepository.findByEmail(email);
+
+   
+    if (!user) {
+      user = await this.usersRepository.createGoogleUser({
+        email,
+        name: `${firstName} ${lastName}`.trim(),
+        profilePicture: picture,
+      
+      });
+    }
+
+
+    const payload = { 
+      sub: user.id, 
+      email: user.email,
+      roles: user.role 
+    };
+
+    const token = this.jwtService.sign(payload);
+
+
+    return {
+      message: 'Inicio de sesión con Google exitoso',
+      user,
+      token,
+    };
+  } 
+
+
   async signIn(email: string, password: string) {
     const cleanEmail = email.trim().toLowerCase();
     const user = await this.usersRepository.getUserByEmail(cleanEmail);

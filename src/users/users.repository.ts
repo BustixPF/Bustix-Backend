@@ -81,4 +81,20 @@ export class UsersRepository {
     void password;
     return userNoPassword;
   }
+
+  async findByEmail(email: string) {
+  return await this.usersOrmRepository.findOneBy({ email });
+}
+
+
+async createGoogleUser(userData: { email: string; name: string; profilePicture?: string }) {
+
+  const newUser = this.usersOrmRepository.create({
+    email: userData.email,
+    name: userData.name,
+   
+  });
+
+  return await this.usersOrmRepository.save(newUser);
+}
 }
