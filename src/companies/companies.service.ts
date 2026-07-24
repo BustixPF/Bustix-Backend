@@ -22,11 +22,11 @@ export class CompaniesService {
       relations: { documents: true },
     });
 
-    if(!companies) {
-      throw new BadRequestException('Error al obtener las compañías')
+    if (!companies) {
+      throw new BadRequestException('Error al obtener las compañías');
     }
 
-    return companies
+    return companies;
   }
 
   // Buscar una empresa por ID con sus documentos
@@ -36,10 +36,12 @@ export class CompaniesService {
       relations: { documents: true },
     });
 
-    if(!companies) {
-      throw new BadRequestException('Error al obtener las compañías mediante su id')
+    if (!companies) {
+      throw new BadRequestException(
+        'Error al obtener las compañías mediante su id',
+      );
     }
-    
-    return companies
+
+    return companies;
   }
 }

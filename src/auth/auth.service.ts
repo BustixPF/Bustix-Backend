@@ -3,7 +3,6 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { Role } from '../common/roles.enum';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -33,7 +32,7 @@ export class AuthService {
     const payload = {
       id: user.id,
       email: user.email,
-      roles: user.role === Role.Admin ? [Role.Admin] : [Role.User],
+      roles: [user.role],
     };
 
     const token = this.jwtService.sign(payload);

@@ -7,6 +7,7 @@ import { typeOrmConfig } from './config/typeorm';
 import { CompaniesModule } from './companies/companies.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { AuthModule } from './auth/auth.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     CompaniesModule,
     FileUploadModule,
+    DashboardModule,
     AuthModule,
   ],
 })

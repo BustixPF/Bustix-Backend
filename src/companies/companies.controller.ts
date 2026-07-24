@@ -2,7 +2,11 @@ import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { Company } from './entities/company.entity';
 import { ApiTags } from '@nestjs/swagger';
-import { createCompaniesDecorator, findAllCompaniesDecorator, findCompaniesByIdDecorator} from './companies.decorator';
+import {
+  createCompaniesDecorator,
+  findAllCompaniesDecorator,
+  findCompaniesByIdDecorator,
+} from './companies.decorator';
 
 @ApiTags('companies')
 @Controller('companies')

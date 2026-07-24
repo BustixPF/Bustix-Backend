@@ -2,3 +2,34 @@
 dist
 node_modules/
 .env
+# Local environment
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test output
+coverage/
+
+# OS
+.DS_Store
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# Build output
+dist/
+
+# TypeORM
+.typeorm
+
+# Uploaded files / temp
+uploads/
+tmp/
+
+# Misc
+*.log

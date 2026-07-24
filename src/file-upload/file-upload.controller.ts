@@ -8,7 +8,10 @@ import {
 import { FileUploadService } from './file-upload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
-import { updateFileUserDecorator, uploadToCloudinaryDecorator } from './file-upload.decorator';
+import {
+  updateFileUserDecorator,
+  uploadToCloudinaryDecorator,
+} from './file-upload.decorator';
 
 @ApiTags('FileUpload')
 @Controller('file-upload')
