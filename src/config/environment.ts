@@ -16,4 +16,8 @@ export const environment = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
 
   JWT_SECRET: process.env.JWT_SECRET || 'secret',
+
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3001',
 };
