@@ -6,9 +6,12 @@ import { environment } from './config/environment';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  //Habilitar CORS para tu frontend en 3001
+  // 🔑 Configuración de CORS según entorno
   app.enableCors({
-    origin: 'http://localhost:3001',
+    origin:
+      environment.NODE_ENV === 'produccion'
+        ? 'https://tu-frontend.vercel.app' // dominio de tu frontend en Vercel
+        : 'http://localhost:3001', // frontend local
     methods: 'GET,POST,PUT,DELETE',
     credentials: true,
   });
