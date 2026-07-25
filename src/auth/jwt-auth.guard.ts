@@ -1,35 +1,26 @@
+// src/auth/jwt-auth.guard.ts
 import {
   Injectable,
-  CanActivate,
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import {
-  AuthenticatedRequest,
-  AuthenticatedUser,
-} from './interfaces/authenticated-request.interface';
+import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  canActivate(context: ExecutionContext) {
+    return super.canActivate(context);
+  }
 
-  canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const authHeader = request.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Token no proporcionado');
+  handleRequest(err: any, user: any, info: any) {
+    if (err || !user) {
+      throw (
+        err ||
+        new UnauthorizedException(
+          'Acceso no autorizado. Se requiere un token válido.',
+        )
+      );
     }
-
-    const token = authHeader.replace('Bearer ', '').trim();
-
-    try {
-      const payload = this.jwtService.verify<AuthenticatedUser>(token);
-      request.user = payload;
-      return true;
-    } catch {
-      throw new UnauthorizedException('Token inválido');
-    }
+    return user;
   }
 }

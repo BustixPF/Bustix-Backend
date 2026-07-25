@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm';
-
 import { CompaniesModule } from './companies/companies.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -26,12 +26,12 @@ import { DashboardModule } from './dashboard/dashboard.module';
       },
     }),
 
-    //módulos de negocio
     AuthModule,
     CompaniesModule,
     FileUploadModule,
     DashboardModule,
     AuthModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}

@@ -3,21 +3,26 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
-import { RolesGuard } from './roles.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './google.strategy';
+import { JwtStrategy } from './jwt.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     UsersModule,
-    JwtModule.register({
-      // Cuidado con dejar la clave Hardcodeada chicos, dejo el comentario para recuerdo (P)
-      secret: 'ClaveSecretaJWT',
-      signOptions: { expiresIn: '1h' },
+    PassportModule.register({ defaultStrategy: 'google' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
   ],
   controllers: [AuthController],
-  // Registre los guards para poder usarlos en otros módulos
-  providers: [AuthService, RolesGuard, JwtAuthGuard],
-  exports: [JwtModule, RolesGuard, JwtAuthGuard],
+  providers: [AuthService, GoogleStrategy, JwtStrategy, JwtAuthGuard],
 })
 export class AuthModule {}
