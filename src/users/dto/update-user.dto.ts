@@ -7,6 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Role } from '../../common/roles.enum';
 
 export class UpdateUserDto {
   /**
@@ -78,4 +79,6 @@ export class UpdateUserDto {
     message: 'La dirección no puede tener más de 80 caracteres',
   })
   address?: string;
+
+  role?: Role; //jmcaldas agrego esto para que no rompa el dashboard de pablo
 }

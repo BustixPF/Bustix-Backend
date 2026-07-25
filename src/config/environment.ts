@@ -11,6 +11,8 @@ export const environment = {
   DB_USERNAME: process.env.DB_USERNAME || 'user',
   DB_PASSWORD: process.env.DB_PASSWORD || 'password',
 
+  NODE_ENV: process.env.NODE_ENV || 'produccion',
+
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
@@ -19,9 +21,8 @@ export const environment = {
 
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
-  
+
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3001',
-
 };

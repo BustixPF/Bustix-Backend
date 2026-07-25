@@ -1,5 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Role } from '../../common/roles.enum';
+import { Ticket } from '../../tickets/entities/ticket.entity';
+import { CompanyRequest } from '../../dashboard/entities/company-request.entity';
+import { RouteRequest } from '../../dashboard/entities/route-request.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -55,4 +58,16 @@ export class User {
    */
   @Column({ type: 'enum', enum: Role, default: Role.User })
   role: Role;
+  // Agregado lo de abajo por la creacion del Dashboard, para poder ver los tickets y requests de cada usuario
+  @OneToMany(() => Ticket, (ticket) => ticket.user)
+  tickets?: Ticket[];
+
+  @OneToMany(
+    () => CompanyRequest,
+    (companyRequest) => companyRequest.requestedBy,
+  )
+  companyRequests?: CompanyRequest[];
+
+  @OneToMany(() => RouteRequest, (routeRequest) => routeRequest.requestedBy)
+  routeRequests?: RouteRequest[];
 }
