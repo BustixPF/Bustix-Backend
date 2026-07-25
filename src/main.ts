@@ -19,7 +19,7 @@ async function bootstrap() {
   app.enableCors({
     origin:
       environment.NODE_ENV === 'produccion'
-        ? 'https://tu-frontend.vercel.app' // dominio de tu frontend en Vercel
+        ? 'https://bustix.vercel.app/' // dominio de tu frontend en Vercel
         : 'http://localhost:3001', // frontend local
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
