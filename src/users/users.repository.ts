@@ -71,6 +71,24 @@ export class UsersRepository {
       throw new NotFoundException(`No existe usuario con id ${id}`);
     }
 
+    if (newUserData.email && newUserData.email !== user.email) {
+      const existingEmail = await this.usersOrmRepository.findOneBy({
+        email: newUserData.email,
+      });
+      if (existingEmail) {
+        throw new ConflictException('Ya existe un usuario con ese email');
+      }
+    }
+
+    if (newUserData.dni && newUserData.dni !== user.dni) {
+      const existingDni = await this.usersOrmRepository.findOneBy({
+        dni: newUserData.dni,
+      });
+      if (existingDni) {
+        throw new ConflictException('Ya existe un usuario con ese DNI');
+      }
+    }
+
     if (newUserData.password) {
       newUserData.password = await bcrypt.hash(newUserData.password, 10);
     }
@@ -80,5 +98,22 @@ export class UsersRepository {
     const { password, ...userNoPassword } = savedUser;
     void password;
     return userNoPassword;
+  }
+
+  async findByEmail(email: string) {
+    return await this.usersOrmRepository.findOneBy({ email });
+  }
+
+  async createGoogleUser(userData: {
+    email: string;
+    name: string;
+    profilePicture?: string;
+  }) {
+    const newUser = this.usersOrmRepository.create({
+      email: userData.email,
+      name: userData.name,
+    });
+
+    return await this.usersOrmRepository.save(newUser);
   }
 }

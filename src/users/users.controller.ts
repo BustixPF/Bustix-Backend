@@ -7,6 +7,8 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +19,8 @@ import {
   getUsersByIdDecorator,
   updateUsersDecorator,
 } from './users.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
@@ -36,6 +40,13 @@ export class UsersController {
     const validPage = pageNum > 0 ? pageNum : 1;
     const validLimit = limitNum > 0 ? limitNum : 10;
     return this.usersService.findAll(validPage, validLimit);
+  }
+
+  @Get('profile')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Req() req) {
+    return req.user;
   }
 
   @Get(':id')
