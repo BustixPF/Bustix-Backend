@@ -10,6 +10,10 @@ const config: DataSourceOptions = {
   username: environment.DB_USERNAME,
   password: environment.DB_PASSWORD,
   database: environment.DB_NAME,
+  ssl:
+    process.env.DB_SSLMODE === 'require'
+      ? { rejectUnauthorized: false }
+      : false,
   entities: ['dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
   logging: false,
