@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Role } from '../common/roles.enum';
 import * as bcrypt from 'bcrypt';
@@ -54,33 +55,29 @@ export class AuthService {
   } 
 
 
-  async signIn(email: string, password: string) {
-    const cleanEmail = email.trim().toLowerCase();
-    const user = await this.usersRepository.getUserByEmail(cleanEmail);
-
+  async signIn(email: string, pass: string) {
+    // 1. Buscamos al usuario por su email
+    const user = await this.usersRepository.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Email o password incorrectos');
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const isPasswordMatching = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordMatching) {
-      throw new BadRequestException('Email o password incorrectos');
+    // 2. Verificamos la contraseña
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const payload = {
-      id: user.id,
-      email: user.email,
-      roles: user.role === Role.Admin ? [Role.Admin] : [Role.User],
-    };
+    // 3. Generamos el payload para el JWT
+    const payload = { id: user.id, email: user.email, role: user.role };
 
-    const token = this.jwtService.sign(payload);
+    // 4. Firmamos y devolvemos la respuesta coincidente con el Frontend
+    const token = await this.jwtService.signAsync(payload);
 
     return {
-      message: 'Logueado con éxito',
+      message: '¡Bienvenido de nuevo!',
       token: token,
-    };
-  }
+    };}
 
   async signUp(userDto: CreateUserDto) {
     const cleanEmail = userDto.email.trim().toLowerCase();

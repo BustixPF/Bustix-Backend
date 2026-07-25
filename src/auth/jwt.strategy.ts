@@ -8,17 +8,12 @@ import { environment } from '../config/environment';
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor() {
     super({
-      // Extrae el token en formato "Bearer <token>" del header Authorization
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false, // Rechaza tokens expirados automáticamente
+      ignoreExpiration: false,
       secretOrKey: environment.JWT_SECRET || 'ClaveSecretaJWT',
     });
   }
 
-  /**
-   * Se ejecuta automáticamente si el token JWT es válido.
-   * Lo que retorne este método se inyectará en `req.user`.
-   */
   async validate(payload: any) {
     if (!payload) {
       throw new UnauthorizedException('Token no válido o expirado');

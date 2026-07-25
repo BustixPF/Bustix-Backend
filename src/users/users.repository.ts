@@ -71,6 +71,24 @@ export class UsersRepository {
       throw new NotFoundException(`No existe usuario con id ${id}`);
     }
 
+    if (newUserData.email && newUserData.email !== user.email) {
+      const existingEmail = await this.usersOrmRepository.findOneBy({
+        email: newUserData.email,
+      });
+      if (existingEmail) {
+        throw new ConflictException('Ya existe un usuario con ese email');
+      }
+    }
+
+    if (newUserData.dni && newUserData.dni !== user.dni) {
+      const existingDni = await this.usersOrmRepository.findOneBy({
+        dni: newUserData.dni,
+      });
+      if (existingDni) {
+        throw new ConflictException('Ya existe un usuario con ese DNI');
+      }
+    }
+
     if (newUserData.password) {
       newUserData.password = await bcrypt.hash(newUserData.password, 10);
     }

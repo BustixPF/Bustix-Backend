@@ -8,6 +8,8 @@ import { CompaniesModule } from './companies/companies.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { AuthModule } from './auth/auth.module';
 
+import { PaymentsModule } from './payments/payments.module';
+
 @Module({
   imports: [
     // Config global
@@ -25,11 +27,11 @@ import { AuthModule } from './auth/auth.module';
       },
     }),
 
-    //módulos de negocio
     AuthModule,
     CompaniesModule,
     FileUploadModule,
     AuthModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}

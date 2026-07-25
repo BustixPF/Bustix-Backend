@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards, Redirect } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+  Redirect,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
@@ -12,7 +20,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('google')
-  @UseGuards(AuthGuard('google')) 
+  @UseGuards(AuthGuard('google'))
   async getGoogle() {}
 
   @Get('google/callback')
