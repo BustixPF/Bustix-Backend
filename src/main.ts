@@ -17,8 +17,8 @@ async function bootstrap() {
 
   //Habilitar CORS para tu frontend en 3001
   app.enableCors({
-    origin: 'http://localhost:3001',
-    methods: 'GET,POST,PUT,DELETE',
+    origin: ['http://localhost:3001'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
@@ -46,3 +46,5 @@ async function bootstrap() {
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
+
+
