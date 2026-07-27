@@ -12,12 +12,10 @@ export class DashboardUserResponseDto {
   email: string;
 
   @ApiProperty({ example: 40123456 })
-
   dni: number;
 
   @ApiProperty({ example: 1123456789 })
   phone: number;
-
 
   @ApiPropertyOptional({ example: 'Calle Falsa 123' })
   address?: string;
