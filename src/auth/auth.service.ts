@@ -4,7 +4,6 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role } from '../common/roles.enum';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -41,7 +40,7 @@ export class AuthService {
     const payload = { 
       sub: user.id, 
       email: user.email,
-      roles: user.role 
+      roles: [user.role],
     };
 
     const token = this.jwtService.sign(payload);

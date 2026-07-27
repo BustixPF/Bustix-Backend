@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -7,6 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Role } from '../../common/roles.enum';
 
 export class UpdateUserDto {
   /**
@@ -78,4 +80,8 @@ export class UpdateUserDto {
     message: 'La dirección no puede tener más de 80 caracteres',
   })
   address?: string;
+
+  @IsOptional()
+  @IsEnum(Role) 
+  role?: Role;
 }
