@@ -36,6 +36,7 @@ export class UserController {
     @Req() request: AuthenticatedRequest,
   ): Promise<TicketResponseDto[]> {
     return this.dashboardService.getUserTickets(request.user!.id);
+
   }
 
   // Obtener datos del perfil del usuario

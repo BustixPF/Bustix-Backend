@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
+import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CompaniesService {
@@ -10,16 +12,15 @@ export class CompaniesService {
     private readonly companyRepo: Repository<Company>,
   ) {}
 
-  // Crear empresa
-  async createCompany(data: Partial<Company>) {
-    const company = this.companyRepo.create(data);
-    return this.companyRepo.save(company);
-  }
+  async createCompany(data: CreateCompanyDto): Promise<Company> {
+    if (data.password !== data.confirmPassword) {
+      throw new BadRequestException('Las contraseñas no coinciden');
+    }
 
-  // Listar todas las empresas con sus documentos
-  async findAll() {
-    const companies = await this.companyRepo.find({
-      relations: { documents: true },
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const company = this.companyRepo.create({
+      ...data,
+      password: hashedPassword,
     });
 
     if (!companies) {
@@ -27,14 +28,24 @@ export class CompaniesService {
     }
 
     return companies;
+    return this.companyRepo.save(company);
   }
 
-  // Buscar una empresa por ID con sus documentos
-  async findOne(id: string) {
-    const companies = await this.companyRepo.findOne({
+  async findAll(): Promise<Company[]> {
+    return this.companyRepo.find({ relations: { documents: true } });
+  }
+
+  async findOne(id: string): Promise<Company> {
+    const company = await this.companyRepo.findOne({
       where: { id },
       relations: { documents: true },
     });
+    if (!company) {
+      throw new BadRequestException('Compañía no encontrada');
+    }
+    return company;
+  }
+
 
     if (!companies) {
       throw new BadRequestException(
@@ -42,6 +53,14 @@ export class CompaniesService {
       );
     }
 
-    return companies;
+    return companies; }
+
+  async updateCompany(id: string, data: UpdateCompanyDto): Promise<Company> {
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+    await this.companyRepo.update(id, data);
+    return this.findOne(id);
+
   }
 }

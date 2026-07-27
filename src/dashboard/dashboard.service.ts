@@ -141,6 +141,12 @@ export class DashboardService {
         name: request.name,
         email: request.email,
         nit: request.nit,
+
+
+        phone: request.phone,
+        password: request.password,
+        confirmPassword: request.confirmPassword,
+
       });
 
       if (request.requestedBy) {
@@ -244,8 +250,13 @@ export class DashboardService {
       id: user.id,
       name: user.name,
       email: user.email,
+
       dni: user.dni ?? 0,
       phone: user.phone ?? 0,
+
+      dni: user.dni,
+      phone: user.phone,
+
       address: user.address,
       role: user.role,
     };
@@ -256,12 +267,19 @@ export class DashboardService {
     name: string;
     nit: string;
     email: string;
+
+
+    phone: string;
+
   }): DashboardCompanyResponseDto {
     return {
       id: company.id,
       name: company.name,
       nit: company.nit,
       email: company.email,
+
+
+      phone: company.phone,
     };
   }
 
@@ -284,6 +302,9 @@ export class DashboardService {
     name: string;
     nit: string;
     email: string;
+
+    phone: string;
+
     documents?: Array<{
       id: string;
       url: string;

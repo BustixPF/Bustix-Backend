@@ -16,43 +16,40 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-   async googleLogin(reqUser: any) {
-  
+  async googleLogin(reqUser: any) {
     if (!reqUser) {
-      throw new BadRequestException('No se recibieron datos del usuario desde Google');
+      throw new BadRequestException(
+        'No se recibieron datos del usuario desde Google',
+      );
     }
 
     const { email, firstName, lastName, picture, accessToken } = reqUser;
 
     let user = await this.usersRepository.findByEmail(email);
 
-   
     if (!user) {
       user = await this.usersRepository.createGoogleUser({
         email,
         name: `${firstName} ${lastName}`.trim(),
         profilePicture: picture,
-      
       });
     }
 
-
-    const payload = { 
-      sub: user.id, 
+    const payload = {
+      sub: user.id,
       email: user.email,
+
       roles: [user.role],
-    };
+   };
 
     const token = this.jwtService.sign(payload);
-
 
     return {
       message: 'Inicio de sesión con Google exitoso',
       user,
       token,
     };
-  } 
-
+  }
 
   async signIn(email: string, pass: string) {
     // 1. Buscamos al usuario por su email
@@ -76,7 +73,8 @@ export class AuthService {
     return {
       message: '¡Bienvenido de nuevo!',
       token: token,
-    };}
+    };
+  }
 
   async signUp(userDto: CreateUserDto) {
     const cleanEmail = userDto.email.trim().toLowerCase();

@@ -15,9 +15,12 @@ async function bootstrap() {
     }),
   );
 
-  //Habilitar CORS para tu frontend en 3001
+  // 🔑 Configuración de CORS según entorno
   app.enableCors({
-    origin: ['http://localhost:3001'],
+    origin:
+      environment.NODE_ENV === 'produccion'
+        ? 'https://bustix.vercel.app' // dominio de tu frontend en Vercel
+        : 'http://localhost:3001', // frontend local
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
@@ -46,5 +49,3 @@ async function bootstrap() {
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
-
-

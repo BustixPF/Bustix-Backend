@@ -8,13 +8,19 @@ export class Company {
   id: string;
 
   @Column({ unique: true })
-  name: string;
+  name: string; // NOMBRE DE LA EMPRESA
+
+  @Column({ unique: true })
+  nit: string; // NIT
+
+  @Column({ unique: true })
+  email: string; // CORREO ELECTRÓNICO CORPORATIVO
 
   @Column()
-  nit: string;
+  phone: string; // TELÉFONO
 
   @Column()
-  email: string;
+  password: string; // CONTRASEÑA (encriptada con bcrypt)
 
   @OneToMany(() => Document, (document) => document.company)
   documents: Document[];

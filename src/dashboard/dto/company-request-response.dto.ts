@@ -16,7 +16,8 @@ export class CompanyRequestResponseDto {
   email: string;
 
   @ApiPropertyOptional({
-    example: 'Documentacion verificada y aprobada.',
+ 
+    example: 'Documentación verificada y aprobada.',
     description: 'Mensaje opcional dejado al responder la solicitud.',
   })
   message?: string;

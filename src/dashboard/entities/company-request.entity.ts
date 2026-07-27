@@ -20,6 +20,15 @@ export class CompanyRequest {
 
   @Column({ type: 'varchar', length: 100 })
   email: string;
+  @Column({ type: 'varchar', length: 20 })
+  phone: string; // TELÉFONO
+
+  @Column({ type: 'varchar', length: 255 })
+  password: string; // CONTRASEÑA (encriptada con bcrypt)
+
+  @Column({ type: 'varchar', length: 255 })
+  confirmPassword: string; // CONFIRMAR CONTRASEÑA
+
 
   @Column({ type: 'text', nullable: true })
   message?: string;
@@ -30,7 +39,7 @@ export class CompanyRequest {
     default: CompanyRequestStatus.Pending,
   })
   status: CompanyRequestStatus;
-  // Agregado lo de abajo por la creacion del Dashboard, para poder ver los tickets y requests de cada usuario
+
   @ManyToOne(() => User, (user) => user.companyRequests, {
     nullable: true,
     onDelete: 'SET NULL',
