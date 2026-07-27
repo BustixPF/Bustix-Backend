@@ -1,4 +1,3 @@
-// src/auth/jwt-auth.guard.ts
 import {
   Injectable,
   ExecutionContext,
@@ -21,6 +20,4 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         )
       );
     }
-    return user;
-  }
-}
+    return user;}}

@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -80,5 +81,8 @@ export class UpdateUserDto {
   })
   address?: string;
 
-  role?: Role; //jmcaldas agrego esto para que no rompa el dashboard de pablo
+  @IsOptional()
+  @IsEnum(Role) 
+  role?: Role;
+
 }

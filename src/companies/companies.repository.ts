@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
 import { allCompanies } from '../utils/companies.data';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CompaniesRepository implements OnModuleInit {
@@ -13,13 +14,18 @@ export class CompaniesRepository implements OnModuleInit {
 
   async onModuleInit() {
     const count = await this.companyRepo.count();
+
     if (count === 0) {
       await Promise.all(
         allCompanies.map(async (element) => {
+          const hashedPassword = await bcrypt.hash(element.password, 10);
+
           const company = this.companyRepo.create({
             name: element.name,
             nit: element.nit,
             email: element.email,
+            phone: element.phone,
+            password: hashedPassword,
           });
 
           await this.companyRepo
@@ -31,6 +37,7 @@ export class CompaniesRepository implements OnModuleInit {
             .execute();
         }),
       );
+
       console.log('✅ Empresas de prueba cargadas automáticamente');
     } else {
       console.log('ℹ️ Empresas ya existen, seeder no ejecutado');
