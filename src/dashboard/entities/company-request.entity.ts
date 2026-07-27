@@ -20,7 +20,6 @@ export class CompanyRequest {
 
   @Column({ type: 'varchar', length: 100 })
   email: string;
-
   @Column({ type: 'varchar', length: 20 })
   phone: string; // TELÉFONO
 
@@ -29,6 +28,7 @@ export class CompanyRequest {
 
   @Column({ type: 'varchar', length: 255 })
   confirmPassword: string; // CONFIRMAR CONTRASEÑA
+
 
   @Column({ type: 'text', nullable: true })
   message?: string;
@@ -40,7 +40,6 @@ export class CompanyRequest {
   })
   status: CompanyRequestStatus;
 
-  // Relación con el usuario que hizo la solicitud
   @ManyToOne(() => User, (user) => user.companyRequests, {
     nullable: true,
     onDelete: 'SET NULL',

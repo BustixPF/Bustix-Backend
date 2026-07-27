@@ -37,14 +37,14 @@ export class User {
    * @example 40123456
    */
   @Column({ type: 'int', unique: true, nullable: true })
-  dni?: number;
+dni?: number;
 
   /**
    * Teléfono de contacto
    * @example 1123456789
    */
-  @Column({ type: 'int', nullable: true })
-  phone?: number;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  phone: number;
 
   /**
    * Dirección, opcional
