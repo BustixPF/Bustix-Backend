@@ -23,11 +23,6 @@ export class CompaniesService {
       password: hashedPassword,
     });
 
-    if (!companies) {
-      throw new BadRequestException('Error al obtener las compañías');
-    }
-
-    return companies;
     return this.companyRepo.save(company);
   }
 
@@ -46,21 +41,11 @@ export class CompaniesService {
     return company;
   }
 
-
-    if (!companies) {
-      throw new BadRequestException(
-        'Error al obtener las compañías mediante su id',
-      );
-    }
-
-    return companies; }
-
   async updateCompany(id: string, data: UpdateCompanyDto): Promise<Company> {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 10);
     }
     await this.companyRepo.update(id, data);
     return this.findOne(id);
-
   }
 }

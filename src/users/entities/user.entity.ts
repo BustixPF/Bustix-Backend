@@ -36,8 +36,8 @@ export class User {
    * DNI / documento de identidad, único. Necesario para emitir el ticket de bus.
    * @example 40123456
    */
-  @Column({ type: 'int', unique: true, nullable: true })
-dni?: number;
+  @Column({ type: 'int', unique: true })
+  dni?: number;
 
   /**
    * Teléfono de contacto
