@@ -40,7 +40,7 @@ export class AuthService {
       email: user.email,
 
       roles: [user.role],
-   };
+    };
 
     const token = this.jwtService.sign(payload);
 
