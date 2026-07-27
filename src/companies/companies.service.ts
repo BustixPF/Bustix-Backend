@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
+import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CompaniesService {
@@ -10,36 +12,55 @@ export class CompaniesService {
     private readonly companyRepo: Repository<Company>,
   ) {}
 
-  // Crear empresa
-  async createCompany(data: Partial<Company>) {
-    const company = this.companyRepo.create(data);
+  async createCompany(data: CreateCompanyDto): Promise<Company> {
+    if (data.password !== data.confirmPassword) {
+      throw new BadRequestException('Las contraseñas no coinciden');
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const company = this.companyRepo.create({
+      ...data,
+      password: hashedPassword,
+    });
+
+    if (!companies) {
+      throw new BadRequestException('Error al obtener las compañías');
+    }
+
+    return companies;
     return this.companyRepo.save(company);
   }
 
-  // Listar todas las empresas con sus documentos
-  async findAll() {
-    const companies = await this.companyRepo.find({
-      relations: { documents: true },
-    });
-
-    if(!companies) {
-      throw new BadRequestException('Error al obtener las compañías')
-    }
-
-    return companies
+  async findAll(): Promise<Company[]> {
+    return this.companyRepo.find({ relations: { documents: true } });
   }
 
-  // Buscar una empresa por ID con sus documentos
-  async findOne(id: string) {
-    const companies = await this.companyRepo.findOne({
+  async findOne(id: string): Promise<Company> {
+    const company = await this.companyRepo.findOne({
       where: { id },
       relations: { documents: true },
     });
-
-    if(!companies) {
-      throw new BadRequestException('Error al obtener las compañías mediante su id')
+    if (!company) {
+      throw new BadRequestException('Compañía no encontrada');
     }
-    
-    return companies
+    return company;
+  }
+
+
+    if (!companies) {
+      throw new BadRequestException(
+        'Error al obtener las compañías mediante su id',
+      );
+    }
+
+    return companies; }
+
+  async updateCompany(id: string, data: UpdateCompanyDto): Promise<Company> {
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+    await this.companyRepo.update(id, data);
+    return this.findOne(id);
+
   }
 }

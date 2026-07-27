@@ -1,10 +1,5 @@
-import { applyDecorators, HttpCode, UseGuards } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { applyDecorators, HttpCode } from '@nestjs/common';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 export function uploadToCloudinaryDecorator() {
   return applyDecorators(
@@ -20,7 +15,7 @@ export function uploadToCloudinaryDecorator() {
     ApiResponse({
       status: 400,
       description: 'Empresa con ese id no fue encontrada',
-    })
+    }),
   );
 }
 

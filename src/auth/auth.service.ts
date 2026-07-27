@@ -2,8 +2,8 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { Role } from '../common/roles.enum';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -16,30 +16,62 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async signIn(email: string, password: string) {
-    const cleanEmail = email.trim().toLowerCase();
-    const user = await this.usersRepository.getUserByEmail(cleanEmail);
-
-    if (!user) {
-      throw new BadRequestException('Email o password incorrectos');
+  async googleLogin(reqUser: any) {
+    if (!reqUser) {
+      throw new BadRequestException(
+        'No se recibieron datos del usuario desde Google',
+      );
     }
 
-    const isPasswordMatching = await bcrypt.compare(password, user.password);
+    const { email, firstName, lastName, picture, accessToken } = reqUser;
 
-    if (!isPasswordMatching) {
-      throw new BadRequestException('Email o password incorrectos');
+    let user = await this.usersRepository.findByEmail(email);
+
+    if (!user) {
+      user = await this.usersRepository.createGoogleUser({
+        email,
+        name: `${firstName} ${lastName}`.trim(),
+        profilePicture: picture,
+      });
     }
 
     const payload = {
-      id: user.id,
+      sub: user.id,
       email: user.email,
-      roles: user.role === Role.Admin ? [Role.Admin] : [Role.User],
-    };
+
+      roles: [user.role],
+   };
 
     const token = this.jwtService.sign(payload);
 
     return {
-      message: 'Logueado con éxito',
+      message: 'Inicio de sesión con Google exitoso',
+      user,
+      token,
+    };
+  }
+
+  async signIn(email: string, pass: string) {
+    // 1. Buscamos al usuario por su email
+    const user = await this.usersRepository.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    // 2. Verificamos la contraseña
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    // 3. Generamos el payload para el JWT
+    const payload = { id: user.id, email: user.email, role: user.role };
+
+    // 4. Firmamos y devolvemos la respuesta coincidente con el Frontend
+    const token = await this.jwtService.signAsync(payload);
+
+    return {
+      message: '¡Bienvenido de nuevo!',
       token: token,
     };
   }
