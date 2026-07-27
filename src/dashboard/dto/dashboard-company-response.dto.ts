@@ -12,4 +12,7 @@ export class DashboardCompanyResponseDto {
 
   @ApiProperty({ example: 'ventas@busandes.com' })
   email: string;
+
+  @ApiProperty({ example: '5551234' })
+  phone: string;
 }
