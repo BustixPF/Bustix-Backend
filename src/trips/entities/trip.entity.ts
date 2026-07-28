@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Company } from '../../companies/entities/company.entity';
 import { Seat } from './seat.entity';
+import { Route } from '../../routes/entities/routes.entity';
 
 @Entity({ name: 'trips' })
 export class Trip {
@@ -54,4 +55,12 @@ export class Trip {
 
   @OneToMany(() => Seat, (seat) => seat.trip, { cascade: true })
   seats: Seat[];
+
+  // Relación con Route
+  @ManyToOne(() => Route, (route) => route.trips, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'routeId' })
+  route: Route;
 }
