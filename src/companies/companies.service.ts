@@ -22,7 +22,6 @@ export class CompaniesService {
       ...data,
       password: hashedPassword,
     });
-
     return this.companyRepo.save(company);
   }
 

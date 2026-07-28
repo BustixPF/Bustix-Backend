@@ -8,22 +8,31 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersRepository } from '../users/users.repository';
+import { NotificationsService } from '../notifications/notifications.service';
+
+interface GoogleLoginUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  picture?: string;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersRepository: UsersRepository,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
-  async googleLogin(reqUser: any) {
+  async googleLogin(reqUser: GoogleLoginUser | null | undefined) {
     if (!reqUser) {
       throw new BadRequestException(
         'No se recibieron datos del usuario desde Google',
       );
     }
 
-    const { email, firstName, lastName, picture, accessToken } = reqUser;
+    const { email, firstName, lastName, picture } = reqUser;
 
     let user = await this.usersRepository.findByEmail(email);
 
@@ -38,7 +47,6 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
-
       roles: [user.role],
     };
 
@@ -52,22 +60,18 @@ export class AuthService {
   }
 
   async signIn(email: string, pass: string) {
-    // 1. Buscamos al usuario por su email
     const user = await this.usersRepository.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // 2. Verificamos la contraseña
     const isPasswordValid = await bcrypt.compare(pass, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // 3. Generamos el payload para el JWT
     const payload = { id: user.id, email: user.email, role: user.role };
 
-    // 4. Firmamos y devolvemos la respuesta coincidente con el Frontend
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -90,11 +94,15 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(userDto.password, 10);
 
-    // Guardamos con la clave hasheada
     const newUser = await this.usersRepository.addUser({
       ...userDto,
       email: cleanEmail,
       password: hashedPassword,
+    });
+
+    await this.notificationsService.sendWelcomeEmail({
+      email: newUser.email,
+      name: newUser.name,
     });
 
     return {

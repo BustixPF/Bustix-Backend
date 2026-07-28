@@ -7,8 +7,6 @@ import { FileUploadModule } from './file-upload/file-upload.module';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PaymentsModule } from './payments/payments.module';
-
-// 👇 importa tu AppController y AppService
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
