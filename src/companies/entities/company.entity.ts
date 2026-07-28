@@ -1,6 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Document } from '../../file-upload/entities/file-uplaod.entity';
 import { Ticket } from '../../tickets/entities/ticket.entity';
+import { Trip } from '../../trips/entities/trip.entity';
+import { Route } from '../../routes/entities/routes.entity';
 
 @Entity('companies')
 export class Company {
@@ -27,4 +29,12 @@ export class Company {
 
   @OneToMany(() => Ticket, (ticket) => ticket.company)
   tickets?: Ticket[];
+
+  // Relación con rutas
+  @OneToMany(() => Route, (route) => route.company)
+  routes: Route[];
+
+  // Relación con viajes
+  @OneToMany(() => Trip, (trip) => trip.company)
+  trips: Trip[];
 }
