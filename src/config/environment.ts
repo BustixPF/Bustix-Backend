@@ -11,7 +11,7 @@ export const environment = {
   DB_USERNAME: process.env.DB_USERNAME || 'user',
   DB_PASSWORD: process.env.DB_PASSWORD || 'password',
 
-  NODE_ENV: process.env.NODE_ENV || 'produccion',
+  NODE_ENV: process.env.NODE_ENV || 'development',
 
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
@@ -24,5 +24,9 @@ export const environment = {
 
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
+
+  // URLs dinámicas para frontend y backend
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3001',
+  BACKEND_URL:
+    process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`,
 };

@@ -13,7 +13,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const options: StrategyOptions = {
       clientID: environment.GOOGLE_CLIENT_ID || 'dummy_id',
       clientSecret: environment.GOOGLE_CLIENT_SECRET || 'dummy_secret',
-      callbackURL: `http://localhost:${environment.PORT}/auth/google/callback`,
+      callbackURL: `${environment.BACKEND_URL}/auth/google/callback`,
       scope: ['email', 'profile'],
     };
 
