@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,6 +22,8 @@ import {
 } from './users.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
+import { Role } from '../common/roles.enum';
 
 @Controller('users')
 export class UsersController {
@@ -45,7 +48,7 @@ export class UsersController {
   @Get('profile')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req) {
+  getProfile(@Req() req: AuthenticatedRequest) {
     return req.user;
   }
 
@@ -56,11 +59,20 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @updateUsersDecorator()
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @Req() req: AuthenticatedRequest,
   ) {
+    const isSelf = req.user?.id === id;
+    const isAdmin = req.user?.role === Role.Admin;
+
+    if (!isSelf && !isAdmin) {
+      throw new ForbiddenException('No podés editar los datos de otro usuario');
+    }
     return this.usersService.update(id, updateUserDto);
   }
 }

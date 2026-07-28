@@ -6,18 +6,18 @@ import { CompaniesModule } from './companies/companies.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-
 import { PaymentsModule } from './payments/payments.module';
+
+// 👇 importa tu AppController y AppService
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
-    // Config global
     ConfigModule.forRoot({
       isGlobal: true,
       load: [typeOrmConfig],
     }),
-
-    // Inicialización de TypeORM con config
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -25,13 +25,13 @@ import { PaymentsModule } from './payments/payments.module';
         return configService.get<TypeOrmModuleOptions>('typeorm')!;
       },
     }),
-
     AuthModule,
     CompaniesModule,
     FileUploadModule,
     DashboardModule,
-    AuthModule,
     PaymentsModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

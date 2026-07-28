@@ -143,6 +143,7 @@ export class DashboardService {
         name: request.name,
         email: request.email,
         nit: request.nit,
+
         phone: request.phone,
         password: request.password,
         confirmPassword: request.confirmPassword,
@@ -264,7 +265,7 @@ export class DashboardService {
       name: user.name,
       email: user.email,
       dni: user.dni ?? 0,
-      phone: Number(user.phone ?? 0),
+      phone: user.phone ?? 0,
       address: user.address,
       role: user.role,
     };
@@ -275,6 +276,8 @@ export class DashboardService {
     name: string;
     nit: string;
     email: string;
+
+
     phone: string;
   }): DashboardCompanyResponseDto {
     return {
@@ -282,6 +285,8 @@ export class DashboardService {
       name: company.name,
       nit: company.nit,
       email: company.email,
+
+
       phone: company.phone,
     };
   }
