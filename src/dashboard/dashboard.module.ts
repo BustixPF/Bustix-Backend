@@ -13,7 +13,6 @@ import { CompaniesModule } from '../companies/companies.module';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
-// Módulo que agrupa los controladores y servicios del Dashboard (API)
 @Module({
   imports: [
     TypeOrmModule.forFeature([Ticket, RouteRequest, CompanyRequest]),

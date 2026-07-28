@@ -15,5 +15,4 @@ export class DashboardCompanyResponseDto {
 
   @ApiProperty({ example: '5551234' })
   phone: string;
-
 }

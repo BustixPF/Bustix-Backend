@@ -60,22 +60,18 @@ export class AuthService {
   }
 
   async signIn(email: string, pass: string) {
-    // 1. Buscamos al usuario por su email
     const user = await this.usersRepository.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // 2. Verificamos la contraseña
     const isPasswordValid = await bcrypt.compare(pass, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // 3. Generamos el payload para el JWT
     const payload = { id: user.id, email: user.email, role: user.role };
 
-    // 4. Firmamos y devolvemos la respuesta coincidente con el Frontend
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -98,7 +94,6 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(userDto.password, 10);
 
-    // Guardamos con la clave hasheada
     const newUser = await this.usersRepository.addUser({
       ...userDto,
       email: cleanEmail,

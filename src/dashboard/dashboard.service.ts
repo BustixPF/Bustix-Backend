@@ -276,8 +276,6 @@ export class DashboardService {
     name: string;
     nit: string;
     email: string;
-
-
     phone: string;
   }): DashboardCompanyResponseDto {
     return {
@@ -285,8 +283,6 @@ export class DashboardService {
       name: company.name,
       nit: company.nit,
       email: company.email,
-
-
       phone: company.phone,
     };
   }
