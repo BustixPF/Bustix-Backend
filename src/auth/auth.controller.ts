@@ -13,6 +13,7 @@ import { LoginUserDto } from './dto/login.user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { signInDecorator, signUpDecorator } from './auth.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { environment } from '../config/environment';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -29,7 +30,7 @@ export class AuthController {
   async getGoogleCallback(@Req() req) {
     const data = await this.authService.googleLogin(req.user);
 
-    const frontendUrl = 'http://localhost:3001/google-callback';
+    const frontendUrl = `${environment.FRONTEND_URL}/google-callback`;
 
     return {
       url: `${frontendUrl}?token=${data.token}&email=${encodeURIComponent(data.user.email)}&name=${encodeURIComponent(data.user.name)}`,

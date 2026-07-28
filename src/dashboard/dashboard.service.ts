@@ -32,12 +32,14 @@ import { DashboardUserResponseDto } from './dto/dashboard-user-response.dto';
 import { DashboardCompanyResponseDto } from './dto/dashboard-company-response.dto';
 import { DashboardCompanyDetailResponseDto } from './dto/dashboard-company-detail-response.dto';
 import { DashboardDocumentResponseDto } from './dto/dashboard-document-response.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class DashboardService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly companiesService: CompaniesService,
+    private readonly notificationsService: NotificationsService,
     @InjectRepository(Ticket)
     private readonly ticketRepo: Repository<Ticket>,
     @InjectRepository(RouteRequest)
@@ -154,6 +156,15 @@ export class DashboardService {
       }
     }
 
+    if (request.requestedBy) {
+      await this.notificationsService.sendCompanyRequestDecisionEmail({
+        email: request.requestedBy.email,
+        name: request.requestedBy.name,
+        status: request.status,
+        message: request.message,
+      });
+    }
+
     return this.toCompanyRequestResponse(request);
   }
 
@@ -163,6 +174,11 @@ export class DashboardService {
   ): Promise<DashboardUserResponseDto> {
     // Cambia el rol de un usuario existente
     const updatedUser = await this.usersRepository.updateUser(userId, { role });
+    await this.notificationsService.sendRoleChangedEmail({
+      email: updatedUser.email,
+      name: updatedUser.name,
+      role: updatedUser.role,
+    });
     return this.toUserResponse(updatedUser);
   }
 
@@ -249,7 +265,7 @@ export class DashboardService {
       name: user.name,
       email: user.email,
       dni: user.dni ?? 0,
-      phone: user.phone,
+      phone: user.phone ?? 0,
       address: user.address,
       role: user.role,
     };
@@ -260,7 +276,6 @@ export class DashboardService {
     name: string;
     nit: string;
     email: string;
-
     phone: string;
   }): DashboardCompanyResponseDto {
     return {
@@ -268,7 +283,6 @@ export class DashboardService {
       name: company.name,
       nit: company.nit,
       email: company.email,
-
       phone: company.phone,
     };
   }
@@ -292,9 +306,7 @@ export class DashboardService {
     name: string;
     nit: string;
     email: string;
-
     phone: string;
-
     documents?: Array<{
       id: string;
       url: string;
