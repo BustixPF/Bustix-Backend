@@ -30,7 +30,6 @@ export class AuthController {
   async getGoogleCallback(@Req() req) {
     const data = await this.authService.googleLogin(req.user);
 
-    // Usamos FRONTEND_URL dinámico
     const frontendUrl = `${environment.FRONTEND_URL}/google-callback`;
 
     return {
