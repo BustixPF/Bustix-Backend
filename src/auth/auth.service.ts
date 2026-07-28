@@ -100,10 +100,12 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    await this.notificationsService.sendWelcomeEmail({
-      email: newUser.email,
-      name: newUser.name,
-    });
+    void this.notificationsService
+      .sendWelcomeEmail({
+        email: newUser.email,
+        name: newUser.name,
+      })
+      .catch(() => {});
 
     return {
       id: newUser,
