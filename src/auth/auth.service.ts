@@ -8,22 +8,31 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersRepository } from '../users/users.repository';
+import { NotificationsService } from '../notifications/notifications.service';
+
+interface GoogleLoginUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  picture?: string;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersRepository: UsersRepository,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
-  async googleLogin(reqUser: any) {
+  async googleLogin(reqUser: GoogleLoginUser | null | undefined) {
     if (!reqUser) {
       throw new BadRequestException(
         'No se recibieron datos del usuario desde Google',
       );
     }
 
-    const { email, firstName, lastName, picture, accessToken } = reqUser;
+    const { email, firstName, lastName, picture } = reqUser;
 
     let user = await this.usersRepository.findByEmail(email);
 
@@ -38,9 +47,8 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
-
       roles: [user.role],
-   };
+    };
 
     const token = this.jwtService.sign(payload);
 
@@ -95,6 +103,11 @@ export class AuthService {
       ...userDto,
       email: cleanEmail,
       password: hashedPassword,
+    });
+
+    await this.notificationsService.sendWelcomeEmail({
+      email: newUser.email,
+      name: newUser.name,
     });
 
     return {

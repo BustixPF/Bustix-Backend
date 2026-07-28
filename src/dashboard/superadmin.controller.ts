@@ -71,12 +71,20 @@ export class SuperadminController {
   // Aceptar/denegar solicitud de empresa
   @Roles(Role.superAdmin)
   @Post('company-requests/:id/respond')
-  @ApiOperation({ summary: 'Responde una solicitud de empresa' })
+  @ApiOperation({
+    summary: 'Responde una solicitud de empresa',
+    description:
+      'Aprueba o rechaza una solicitud de empresa. Si la solicitud tiene un usuario asociado, el sistema intenta enviar un email notificando la decisión.',
+  })
   @ApiParam({
     name: 'id',
     example: '8b5dc01d-3124-4f1a-a876-b0a8f3361302',
   })
-  @ApiOkResponse({ type: CompanyRequestResponseDto })
+  @ApiOkResponse({
+    type: CompanyRequestResponseDto,
+    description:
+      'Solicitud respondida correctamente. Validar también el email de aprobación o rechazo en Mailtrap.',
+  })
   @ApiBadRequestResponse({ description: 'La solicitud ya fue procesada' })
   @ApiNotFoundResponse({ description: 'Solicitud no encontrada' })
   @ApiUnauthorizedResponse({ description: 'Token no proporcionado o invalido' })
@@ -91,12 +99,20 @@ export class SuperadminController {
   // Cambiar rol de un usuario
   @Roles(Role.superAdmin)
   @Patch('users/:id/role')
-  @ApiOperation({ summary: 'Cambia el rol de un usuario' })
+  @ApiOperation({
+    summary: 'Cambia el rol de un usuario',
+    description:
+      'Actualiza el rol del usuario indicado. Si el cambio es exitoso, el sistema intenta enviar un email notificando el nuevo rol.',
+  })
   @ApiParam({
     name: 'id',
     example: '2d89af0c-c685-4c48-a8c6-1a9b2fd8d8f5',
   })
-  @ApiOkResponse({ type: DashboardUserResponseDto })
+  @ApiOkResponse({
+    type: DashboardUserResponseDto,
+    description:
+      'Rol actualizado correctamente. Validar también el email de cambio de rol en Mailtrap.',
+  })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
   @ApiUnauthorizedResponse({ description: 'Token no proporcionado o invalido' })
   @ApiForbiddenResponse({ description: 'Rol insuficiente' })

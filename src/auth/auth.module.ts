@@ -8,12 +8,12 @@ import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './google.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
-
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     UsersModule,
+    NotificationsModule,
     PassportModule.register({ defaultStrategy: 'google' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

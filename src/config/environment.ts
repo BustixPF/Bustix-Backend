@@ -25,4 +25,11 @@ export const environment = {
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3001',
+
+  MAIL_HOST: process.env.MAIL_HOST || '',
+  MAIL_PORT: Number(process.env.MAIL_PORT) || 587,
+  MAIL_USER: process.env.MAIL_USER || '',
+  MAIL_PASSWORD: process.env.MAIL_PASSWORD || '',
+  MAIL_FROM: process.env.MAIL_FROM || '',
+  MAIL_SECURE: process.env.MAIL_SECURE === 'true',
 };

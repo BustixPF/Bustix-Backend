@@ -11,6 +11,7 @@ import { CompanyRequest } from './entities/company-request.entity';
 import { UsersModule } from '../users/users.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 // Módulo que agrupa los controladores y servicios del Dashboard (API)
 @Module({
@@ -19,6 +20,7 @@ import { AuthModule } from '../auth/auth.module';
     UsersModule,
     CompaniesModule,
     AuthModule,
+    NotificationsModule,
   ],
   controllers: [
     DashboardController,
