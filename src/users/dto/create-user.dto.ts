@@ -23,7 +23,7 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'El nombre es obligatorio' })
   @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
   @MaxLength(80, { message: 'El nombre no puede tener más de 80 caracteres' })
-  name!: string;
+  name: string;
 
   /**
    * Email válido, usado para login
@@ -31,7 +31,7 @@ export class CreateUserDto {
    */
   @IsEmail({}, { message: 'El email debe ser un email válido' })
   @IsNotEmpty({ message: 'El email es obligatorio' })
-  email!: string;
+  email: string;
 
   /**
    * DNI / documento de identidad, requerido para emitir el ticket
@@ -39,7 +39,7 @@ export class CreateUserDto {
    */
   @IsInt({ message: 'El DNI debe ser un número entero' })
   @IsNotEmpty({ message: 'El DNI es obligatorio' })
-  dni!: number;
+  dni: number;
 
   /**
    * Teléfono de contacto
@@ -47,7 +47,7 @@ export class CreateUserDto {
    */
   @IsInt({ message: 'El teléfono debe ser un número' })
   @IsNotEmpty({ message: 'El teléfono es obligatorio' })
-  phone!: number;
+  phone: number;
 
   /**
    * La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo
@@ -71,7 +71,7 @@ export class CreateUserDto {
         'La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula, un número y un símbolo',
     },
   )
-  password!: string;
+  password: string;
 
   /**
    * Debe ser una réplica exacta de la contraseña
@@ -79,7 +79,7 @@ export class CreateUserDto {
    */
   @IsNotEmpty()
   @Validate(MatchPassword, ['password'])
-  confirmPassword!: string;
+  confirmPassword: string;
 
   /**
    * Dirección, opcional
