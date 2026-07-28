@@ -9,6 +9,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { PaymentsModule } from './payments/payments.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { TripsModule } from './trips/trips.module';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { AppService } from './app.service';
     FileUploadModule,
     DashboardModule,
     PaymentsModule,
+    TripsModule,
+    TicketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

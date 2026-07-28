@@ -21,6 +21,12 @@ export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  tripId?: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  seatId?: string;
+
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
