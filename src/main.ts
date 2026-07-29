@@ -18,36 +18,38 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  // Configuración flexible de CORS
   app.enableCors({
-    origin:
-      environment.NODE_ENV === 'produccion'
-        ? 'https://bustix.vercel.app'
-        : 'http://localhost:3001',
+    origin: (origin, callback) => {
+      // Permite peticiones sin origin (como Postman/Swagger) o dominis de Vercel y Localhost
+      if (
+        !origin ||
+        origin.includes('vercel.app') ||
+        origin.includes('localhost')
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true); // O cambiar por new Error('Not allowed by CORS') si querés restricción estricta
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
   const config = new DocumentBuilder()
     .setTitle('BusTix API')
-    .setDescription('Aplicacion creada con NestJS')
+    .setDescription('Documentación de la API de BusTix')
     .setVersion('1.0.0')
     .addBearerAuth()
-    .setContact(
-      'BusTix',
-      'https://github.com/BustixPF/Bustix-Backend',
-      'bustix@gmail.com',
-    )
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
-  const HOST = environment.HOST;
-  const PORT = environment.PORT;
+  const PORT = process.env.PORT || environment.PORT || 3000;
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`Servidor escuchando en http://${HOST}:${PORT}/`);
+  await app.listen(PORT, '0.0.0.0');
+  console.log(`Servidor activo en el puerto: ${PORT}`);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-bootstrap();
+void bootstrap();
