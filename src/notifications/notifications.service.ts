@@ -76,6 +76,9 @@ export class NotificationsService {
         user: environment.MAIL_USER,
         pass: environment.MAIL_PASSWORD,
       },
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 10_000,
     });
   }
 
