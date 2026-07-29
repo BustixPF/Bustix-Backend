@@ -3,10 +3,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
-import { JwtAuthGuard } from './jwt-auth.guard';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './google.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { JwtAuthGuard } from './jwt-auth.guard'; // 👈 1. Importar el guard
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsModule } from '../notifications/notifications.module';
 
@@ -14,7 +14,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
   imports: [
     UsersModule,
     NotificationsModule,
-    PassportModule.register({ defaultStrategy: 'google' }),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -25,6 +25,17 @@ import { NotificationsModule } from '../notifications/notifications.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy, JwtAuthGuard],
+  providers: [
+    AuthService, 
+    GoogleStrategy, 
+    JwtStrategy, 
+    JwtAuthGuard, 
+  ],
+  exports: [
+    AuthService, 
+    JwtAuthGuard, 
+    PassportModule, 
+    JwtModule,
+  ],
 })
 export class AuthModule {}
