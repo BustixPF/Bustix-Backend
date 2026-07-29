@@ -35,7 +35,6 @@ export class AuthController {
   ) {
     const data = await this.authService.googleLogin(req.user);
 
-
     res.cookie('token', data.token, {
       httpOnly: true,
       secure: environment.NODE_ENV === 'produccion',
@@ -55,7 +54,7 @@ export class AuthController {
   @signInDecorator()
   async signIn(
     @Body() credentials: LoginUserDto,
-    @Res({ passthrough: true }) res: Response, 
+    @Res({ passthrough: true }) res: Response,
   ) {
     const data = await this.authService.signIn(
       credentials.email,
@@ -77,7 +76,6 @@ export class AuthController {
   async signUp(@Body() user: CreateUserDto) {
     return await this.authService.signUp(user);
   }
-
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
