@@ -50,7 +50,7 @@ export async function seedTrips(dataSource: DataSource) {
       seatRepo.create({
         trip: savedTrip,
         seatNumber: i + 1,
-        status: SeatStatus.Available, // 👈 ahora sí compila
+        status: SeatStatus.Available,
       }),
     );
     await seatRepo.save(seats);
