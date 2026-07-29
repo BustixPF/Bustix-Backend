@@ -1,46 +1,50 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
-import { allCompanies } from '../utils/companies.data';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class CompaniesRepository implements OnModuleInit {
+export class CompaniesRepository {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepo: Repository<Company>,
   ) {}
 
-  async onModuleInit() {
-    const count = await this.companyRepo.count();
+  // Buscar empresa por NIT
+  async findByNit(nit: string): Promise<Company | null> {
+    return this.companyRepo.findOne({ where: { nit } });
+  }
 
-    if (count === 0) {
-      await Promise.all(
-        allCompanies.map(async (element) => {
-          const hashedPassword = await bcrypt.hash(element.password, 10);
+  // Buscar empresa por email
+  async findByEmail(email: string): Promise<Company | null> {
+    return this.companyRepo.findOne({ where: { email } });
+  }
 
-          const company = this.companyRepo.create({
-            name: element.name,
-            nit: element.nit,
-            email: element.email,
-            phone: element.phone,
-            password: hashedPassword,
-          });
+  // Crear empresa
+  async createCompany(data: Partial<Company>): Promise<Company> {
+    const company = this.companyRepo.create(data);
+    return this.companyRepo.save(company);
+  }
 
-          await this.companyRepo
-            .createQueryBuilder()
-            .insert()
-            .into(Company)
-            .values(company)
-            .orUpdate(['nit', 'email'], ['name'])
-            .execute();
-        }),
-      );
+  // Actualizar empresa
+  async updateCompany(
+    id: string,
+    data: Partial<Company>,
+  ): Promise<Company | null> {
+    await this.companyRepo.update(id, data);
+    return this.companyRepo.findOne({ where: { id } });
+  }
 
-      console.log('✅ Empresas de prueba cargadas automáticamente');
-    } else {
-      console.log('ℹ️ Empresas ya existen, seeder no ejecutado');
-    }
+  // Listar todas las empresas
+  async findAll(): Promise<Company[]> {
+    return this.companyRepo.find({ relations: { documents: true } });
+  }
+
+  // Buscar empresa por ID
+  async findOne(id: string): Promise<Company | null> {
+    return this.companyRepo.findOne({
+      where: { id },
+      relations: { documents: true },
+    });
   }
 }
