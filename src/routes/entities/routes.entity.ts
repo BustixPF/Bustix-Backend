@@ -11,8 +11,8 @@ import { Trip } from '../../trips/entities/trip.entity';
 
 @Entity('routes')
 export class Route {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ length: 100 })
   origin: string;
