@@ -1,6 +1,5 @@
 // utils/trips.data.ts
 export const allTrips = [
-  // Transporte Rápido S.A.
   {
     nit: '900123456-7',
     origin: 'Medellín',
