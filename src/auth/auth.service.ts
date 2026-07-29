@@ -27,35 +27,35 @@ export class AuthService {
   ) {}
 
   async googleLogin(reqUser: GoogleLoginUser | null | undefined) {
-  if (!reqUser) {
-    throw new BadRequestException(
-      'No se recibieron datos del usuario desde Google',
-    );
+    if (!reqUser) {
+      throw new BadRequestException(
+        'No se recibieron datos del usuario desde Google',
+      );
+    }
+
+    const { email, firstName, lastName, picture } = reqUser;
+
+    let user = await this.usersRepository.findByEmail(email);
+
+    if (!user) {
+      user = await this.usersRepository.createGoogleUser({
+        email,
+        name: `${firstName} ${lastName}`.trim(),
+        profilePicture: picture,
+      });
+    }
+
+    // Estructura idéntica a signIn para no romper la lectura de cookies
+    const payload = { id: user.id, email: user.email, role: user.role };
+
+    const token = this.jwtService.sign(payload);
+
+    return {
+      message: 'Inicio de sesión con Google exitoso',
+      user,
+      token,
+    };
   }
-
-  const { email, firstName, lastName, picture } = reqUser;
-
-  let user = await this.usersRepository.findByEmail(email);
-
-  if (!user) {
-    user = await this.usersRepository.createGoogleUser({
-      email,
-      name: `${firstName} ${lastName}`.trim(),
-      profilePicture: picture,
-    });
-  }
-
-  // Estructura idéntica a signIn para no romper la lectura de cookies
-  const payload = { id: user.id, email: user.email, role: user.role };
-
-  const token = this.jwtService.sign(payload);
-
-  return {
-    message: 'Inicio de sesión con Google exitoso',
-    user,
-    token,
-  };
-}
 
   async signIn(email: string, pass: string) {
     const user = await this.usersRepository.findByEmail(email);

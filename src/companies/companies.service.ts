@@ -1,16 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Company } from './entities/company.entity';
-import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
 import * as bcrypt from 'bcrypt';
+import { CompaniesRepository } from './companies.repository';
+import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import { Company } from './entities/company.entity';
 
 @Injectable()
 export class CompaniesService {
-  constructor(
-    @InjectRepository(Company)
-    private readonly companyRepo: Repository<Company>,
-  ) {}
+  constructor(private readonly companiesRepo: CompaniesRepository) {}
 
   async createCompany(data: CreateCompanyDto): Promise<Company> {
     if (data.password !== data.confirmPassword) {
@@ -18,22 +14,18 @@ export class CompaniesService {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const company = this.companyRepo.create({
+    return this.companiesRepo.createCompany({
       ...data,
       password: hashedPassword,
     });
-    return this.companyRepo.save(company);
   }
 
   async findAll(): Promise<Company[]> {
-    return this.companyRepo.find({ relations: { documents: true } });
+    return this.companiesRepo.findAll();
   }
 
   async findOne(id: string): Promise<Company> {
-    const company = await this.companyRepo.findOne({
-      where: { id },
-      relations: { documents: true },
-    });
+    const company = await this.companiesRepo.findOne(id);
     if (!company) {
       throw new BadRequestException('Compañía no encontrada');
     }
@@ -44,7 +36,10 @@ export class CompaniesService {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 10);
     }
-    await this.companyRepo.update(id, data);
-    return this.findOne(id);
+    const updated = await this.companiesRepo.updateCompany(id, data);
+    if (!updated) {
+      throw new BadRequestException('Compañía no encontrada');
+    }
+    return updated;
   }
 }
