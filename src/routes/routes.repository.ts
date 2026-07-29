@@ -1,12 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { allRoutes } from '../utils/routes.data';
 import { Company } from '../companies/entities/company.entity';
 import { Route } from './entities/routes.entity';
 
 @Injectable()
-export class RoutesRepository implements OnModuleInit {
+export class RoutesRepository {
   constructor(
     @InjectRepository(Route)
     private readonly routeRepo: Repository<Route>,
@@ -14,46 +13,28 @@ export class RoutesRepository implements OnModuleInit {
     private readonly companyRepo: Repository<Company>,
   ) {}
 
-  async onModuleInit() {
-    await this.seedRoutes();
-  }
-
   async findAll(): Promise<Route[]> {
     return this.routeRepo.find({ relations: { company: true } });
   }
 
-  async seedRoutes() {
-    const existingRoutes = await this.routeRepo.count();
-    if (existingRoutes > 0) {
-      console.log('ℹ️ Rutas ya existen, seeder no ejecutado');
-      return;
-    }
+  async findById(id: number): Promise<Route | null> {
+    return this.routeRepo.findOne({
+      where: { id },
+      relations: { company: true },
+    });
+  }
 
-    let inserted = 0;
+  async create(routeData: Partial<Route>): Promise<Route> {
+    const newRoute = this.routeRepo.create(routeData);
+    return this.routeRepo.save(newRoute);
+  }
 
-    for (const route of allRoutes) {
-      const company = await this.companyRepo.findOne({
-        where: { nit: route.nit },
-      });
-      if (!company) {
-        console.warn(
-          `Empresa con NIT ${route.nit} no encontrada, omitiendo ruta.`,
-        );
-        continue;
-      }
+  async update(id: number, routeData: Partial<Route>): Promise<Route | null> {
+    await this.routeRepo.update(id, routeData);
+    return this.findById(id);
+  }
 
-      const newRoute = this.routeRepo.create({
-        origin: route.origin,
-        destination: route.destination,
-        duration: Number(route.duration),
-        price: Number(route.price),
-        companyId: company.id,
-      });
-
-      await this.routeRepo.save(newRoute);
-      inserted++;
-    }
-
-    console.log(`✅ Seeder de rutas ejecutado 🚍, count: ${inserted}`);
+  async delete(id: number): Promise<void> {
+    await this.routeRepo.delete(id);
   }
 }
