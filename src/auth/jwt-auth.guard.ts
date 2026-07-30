@@ -11,13 +11,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest(err: any, user: any) {
     if (err || !user) {
       throw (
-        err ||
-        new UnauthorizedException(
-          'Acceso no autorizado. Se requiere un token válido.',
-        )
+        err || new UnauthorizedException('Token no proporcionado o inválido')
       );
     }
-    return user;}}
+    return user;
+  }
+}

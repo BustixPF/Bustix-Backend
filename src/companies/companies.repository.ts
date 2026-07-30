@@ -1,46 +1,65 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
-import { allCompanies } from '../utils/companies.data';
-import * as bcrypt from 'bcrypt';
+import { CompanyStatus } from '../common/company-status.enum';
 
 @Injectable()
-export class CompaniesRepository implements OnModuleInit {
+export class CompaniesRepository {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepo: Repository<Company>,
   ) {}
 
-  async onModuleInit() {
-    const count = await this.companyRepo.count();
+  // Buscar empresa por NIT
+  async findByNit(nit: string): Promise<Company | null> {
+    return this.companyRepo.findOne({ where: { nit } });
+  }
 
-    if (count === 0) {
-      await Promise.all(
-        allCompanies.map(async (element) => {
-          const hashedPassword = await bcrypt.hash(element.password, 10);
+  // Buscar empresa por email
+  async findByEmail(email: string): Promise<Company | null> {
+    return this.companyRepo.findOne({ where: { email } });
+  }
 
-          const company = this.companyRepo.create({
-            name: element.name,
-            nit: element.nit,
-            email: element.email,
-            phone: element.phone,
-            password: hashedPassword,
-          });
+  // Crear empresa
+  async createCompany(data: Partial<Company>): Promise<Company> {
+    const company = this.companyRepo.create(data);
+    return this.companyRepo.save(company);
+  }
 
-          await this.companyRepo
-            .createQueryBuilder()
-            .insert()
-            .into(Company)
-            .values(company)
-            .orUpdate(['nit', 'email'], ['name'])
-            .execute();
-        }),
-      );
-
-      console.log('✅ Empresas de prueba cargadas automáticamente');
-    } else {
-      console.log('ℹ️ Empresas ya existen, seeder no ejecutado');
+  // Actualizar empresa (ahora siempre devuelve Company)
+  async updateCompany(id: string, data: Partial<Company>): Promise<Company> {
+    await this.companyRepo.update(id, data);
+    const updated = await this.companyRepo.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Compañía con id ${id} no encontrada`);
     }
+    return updated;
+  }
+
+  // Actualizar solo el estado de la empresa
+  async updateCompanyStatus(
+    id: string,
+    status: CompanyStatus,
+  ): Promise<Company> {
+    await this.companyRepo.update(id, { status });
+    const updated = await this.companyRepo.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Compañía con id ${id} no encontrada`);
+    }
+    return updated;
+  }
+
+  // Listar todas las empresas
+  async findAll(): Promise<Company[]> {
+    return this.companyRepo.find({ relations: { documents: true } });
+  }
+
+  // Buscar empresa por ID
+  async findOne(id: string): Promise<Company | null> {
+    return this.companyRepo.findOne({
+      where: { id },
+      relations: { documents: true },
+    });
   }
 }

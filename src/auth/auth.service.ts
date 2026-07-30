@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -33,7 +34,6 @@ export class AuthService {
     }
 
     const { email, firstName, lastName, picture } = reqUser;
-
     let user = await this.usersRepository.findByEmail(email);
 
     if (!user) {
@@ -44,23 +44,69 @@ export class AuthService {
       });
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      roles: [user.role],
-    };
-
-    const token = this.jwtService.sign(payload);
+    const payload = { id: user.id, email: user.email, role: user.role };
+    const token = await this.jwtService.signAsync(payload);
 
     return {
       message: 'Inicio de sesión con Google exitoso',
-      user,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
       token,
     };
   }
 
+  async signUp(userDto: CreateUserDto) {
+    const cleanEmail = userDto.email.trim().toLowerCase();
+
+    const existUser = await this.usersRepository.getUserByEmail(cleanEmail);
+    if (existUser) {
+      throw new ConflictException('El usuario ya está registrado');
+    }
+
+    if (userDto.password !== userDto.confirmPassword) {
+      throw new BadRequestException('Las contraseñas no coinciden');
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(userDto.password, 10);
+
+      const newUser = await this.usersRepository.addUser({
+        ...userDto,
+        email: cleanEmail,
+        password: hashedPassword,
+      });
+
+      // Envío asíncrono del mail sin bloquear el registro
+      this.notificationsService
+        .sendWelcomeEmail({
+          email: newUser.email,
+          name: newUser.name,
+        })
+        .catch((err) =>
+          console.error('Error enviando email de bienvenida:', err),
+        );
+
+      return {
+        id: newUser.id,
+        email: newUser.email,
+        message: 'Usuario registrado con éxito',
+      };
+    } catch (error) {
+      console.error('Error durante signUp:', error);
+      throw new InternalServerErrorException(
+        'Ocurrió un error al crear la cuenta. Verifica los campos solicitados.',
+      );
+    }
+  }
+
   async signIn(email: string, pass: string) {
-    const user = await this.usersRepository.findByEmail(email);
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await this.usersRepository.findByEmail(cleanEmail);
+
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
@@ -71,45 +117,17 @@ export class AuthService {
     }
 
     const payload = { id: user.id, email: user.email, role: user.role };
-
     const token = await this.jwtService.signAsync(payload);
 
     return {
       message: '¡Bienvenido de nuevo!',
-      token: token,
-    };
-  }
-
-  async signUp(userDto: CreateUserDto) {
-    const cleanEmail = userDto.email.trim().toLowerCase();
-
-    const existUser = await this.usersRepository.getUserByEmail(cleanEmail);
-    if (existUser) {
-      throw new ConflictException('El usuario ya existe');
-    }
-
-    if (userDto.password !== userDto.confirmPassword) {
-      throw new BadRequestException('Las contraseñas no coinciden');
-    }
-
-    const hashedPassword = await bcrypt.hash(userDto.password, 10);
-
-    const newUser = await this.usersRepository.addUser({
-      ...userDto,
-      email: cleanEmail,
-      password: hashedPassword,
-    });
-
-    void this.notificationsService
-      .sendWelcomeEmail({
-        email: newUser.email,
-        name: newUser.name,
-      })
-      .catch(() => {});
-
-    return {
-      id: newUser,
-      message: 'Usuario registrado con éxito',
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     };
   }
 }
