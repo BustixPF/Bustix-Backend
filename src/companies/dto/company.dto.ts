@@ -1,4 +1,3 @@
-// company.dto.ts
 import {
   IsEmail,
   IsNotEmpty,
@@ -8,69 +7,97 @@ import {
   MinLength,
   IsStrongPassword,
   IsNumberString,
+  IsEnum,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { CompanyStatus } from '../../common/company-status.enum';
 
 export class CreateCompanyDto {
-  @IsString({ message: 'El nombre debe ser una cadena de texto' })
-  @IsNotEmpty({ message: 'El nombre es obligatorio' })
-  @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
-  @MaxLength(80, { message: 'El nombre no puede tener más de 80 caracteres' })
+  @ApiProperty({
+    example: 'Mi Empresa S.A.',
+    description: 'Nombre de la empresa',
+  })
+  @IsString()
   @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(80)
   name: string;
 
-  @IsNumberString({}, { message: 'El NIT debe contener solo números' })
-  @IsNotEmpty({ message: 'El NIT es obligatorio' })
-  nit: string; // NIT
-
-  @IsEmail({}, { message: 'El email debe ser un email válido' })
-  @IsNotEmpty({ message: 'El email es obligatorio' })
-  email: string; // CORREO ELECTRÓNICO CORPORATIVO
-
-  @IsNotEmpty()
-  phone: string; // TELÉFONO
-
-  @IsString({ message: 'La contraseña debe ser una cadena de texto' })
-  @IsNotEmpty({ message: 'La contraseña es obligatoria' })
-  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
-  @MaxLength(15, {
-    message: 'La contraseña no puede tener más de 15 caracteres',
+  @ApiProperty({
+    example: '123456789',
+    description: 'Número de NIT de la empresa',
   })
-  @IsStrongPassword(
-    {
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
-      minSymbols: 1,
-    },
-    {
-      message:
-        'La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula, un número y un símbolo',
-    },
-  )
-  password: string; // CONTRASEÑA
+  @IsNumberString()
+  @IsNotEmpty()
+  nit: string;
 
-  @IsNotEmpty({ message: 'La confirmación de la contraseña es obligatoria' })
-  confirmPassword: string; // CONFIRMAR CONTRASEÑA
+  @ApiProperty({
+    example: 'empresa@correo.com',
+    description: 'Correo corporativo',
+  })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({
+    example: '3001234567',
+    description: 'Teléfono de contacto',
+  })
+  @IsNotEmpty()
+  phone: string;
+
+  @ApiProperty({ example: 'Password123!', description: 'Contraseña segura' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(15)
+  @IsStrongPassword()
+  password: string;
+
+  @ApiProperty({
+    example: 'Password123!',
+    description: 'Confirmación de la contraseña',
+  })
+  @IsNotEmpty()
+  confirmPassword: string;
 }
 
 export class UpdateCompanyDto {
+  @ApiProperty({ example: 'Nueva Empresa S.A.', required: false })
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   name?: string;
 
+  @ApiProperty({ example: '987654321', required: false })
   @IsOptional()
-  @IsNotEmpty()
+  @IsNumberString()
   nit?: string;
 
+  @ApiProperty({ example: 'nuevo@correo.com', required: false })
   @IsOptional()
   @IsEmail()
   email?: string;
 
+  @ApiProperty({ example: '3109876543', required: false })
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   phone?: string;
 
+  @ApiProperty({ example: 'NewPassword123!', required: false })
   @IsOptional()
+  @IsString()
   @MinLength(8)
+  @MaxLength(15)
+  @IsStrongPassword()
   password?: string;
+
+  @ApiProperty({
+    enum: CompanyStatus,
+    example: CompanyStatus.APPROVED,
+    description: 'Estado de la empresa (pending, approved, rejected)',
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(CompanyStatus)
+  status?: CompanyStatus;
 }

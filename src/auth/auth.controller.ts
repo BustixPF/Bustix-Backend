@@ -13,13 +13,14 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { environment } from '../config/environment';
 import type { Response, Request } from 'express';
 
 const isProduction =
-  environment.NODE_ENV === 'production' || environment.NODE_ENV === 'produccion';
+  environment.NODE_ENV === 'production' ||
+  environment.NODE_ENV === 'produccion';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
