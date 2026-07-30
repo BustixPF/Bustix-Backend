@@ -30,19 +30,36 @@ export class PaymentsService {
 
   async createCheckoutSession(dto: CreateCheckoutSessionDto, userId: string) {
     const trip = await this.tripsService.findOne(dto.tripId);
-    await this.tripsService.reserveSeat(dto.tripId, dto.seatId);
+    const seatIds = [...new Set(dto.seatIds)];
 
-    const currency = 'usd';
-    const description = `${trip.origin} - ${trip.destination}`;
+    // Reserva todos los asientos pedidos. Si alguno falla (ya vendido/reservado),
+    // liberamos los que sí se habían reservado y cortamos ahí.
+    const reserved: string[] = [];
+    try {
+      for (const seatId of seatIds) {
+        await this.tripsService.reserveSeat(dto.tripId, seatId);
+        reserved.push(seatId);
+      }
+    } catch (err) {
+      await Promise.all(
+        reserved.map((id) => this.tripsService.releaseSeat(id)),
+      );
+      throw err;
+    }
+
+    const currency = 'cop';
+    const quantity = seatIds.length;
+    const totalAmount = Number(trip.price) * quantity;
+    const description = `${trip.origin} - ${trip.destination} (${quantity} ${quantity === 1 ? 'pasaje' : 'pasajes'})`;
 
     const payment = await this.paymentsRepository.save(
       this.paymentsRepository.create({
-        amount: trip.price,
+        amount: totalAmount,
         currency,
         description,
         userId,
         tripId: trip.id,
-        seatId: dto.seatId,
+        seatIds,
         status: PaymentStatus.Pending,
       }),
     );
@@ -58,7 +75,7 @@ export class PaymentsService {
               product_data: { name: description },
               unit_amount: Math.round(Number(trip.price) * 100),
             },
-            quantity: 1,
+            quantity,
           },
         ],
         success_url: `${environment.FRONTEND_URL}/pago/exitoso?session_id={CHECKOUT_SESSION_ID}`,
@@ -66,7 +83,7 @@ export class PaymentsService {
         metadata: {
           paymentId: payment.id,
           tripId: trip.id,
-          seatId: dto.seatId,
+          seatIds: seatIds.join(','),
           userId,
         },
       });
@@ -75,7 +92,7 @@ export class PaymentsService {
       await this.paymentsRepository.save(payment);
       return { url: session.url, paymentId: payment.id };
     } catch (err) {
-      await this.tripsService.releaseSeat(dto.seatId);
+      await Promise.all(seatIds.map((id) => this.tripsService.releaseSeat(id)));
       throw err;
     }
   }
@@ -123,21 +140,32 @@ export class PaymentsService {
         : (session.payment_intent?.id ?? payment.stripePaymentIntentId);
     await this.paymentsRepository.save(payment);
 
-    if (payment.seatId) {
-      await this.tripsService.markSeatAsSold(payment.seatId);
-    }
+    const seatIds = payment.seatIds ?? [];
+    await Promise.all(
+      seatIds.map((id) => this.tripsService.markSeatAsSold(id)),
+    );
 
     if (payment.userId) {
       const trip = payment.tripId
         ? await this.tripsService.findOne(payment.tripId)
         : null;
-      await this.ticketsService.create({
-        origin: trip?.origin ?? '',
-        destination: trip?.destination ?? '',
-        price: Number(payment.amount),
-        userId: payment.userId,
-        companyId: trip?.companyId ?? '',
-      });
+      const perSeatPrice =
+        seatIds.length > 0
+          ? Number(payment.amount) / seatIds.length
+          : Number(payment.amount);
+
+      // Un Ticket por cada asiento comprado
+      await Promise.all(
+        (seatIds.length > 0 ? seatIds : [null]).map(() =>
+          this.ticketsService.create({
+            origin: trip?.origin ?? '',
+            destination: trip?.destination ?? '',
+            price: perSeatPrice,
+            userId: payment.userId!,
+            companyId: trip?.companyId ?? '',
+          }),
+        ),
+      );
     }
   }
 
@@ -148,9 +176,8 @@ export class PaymentsService {
     if (!payment) return;
     payment.status = PaymentStatus.Canceled;
     await this.paymentsRepository.save(payment);
-    if (payment.seatId) {
-      await this.tripsService.releaseSeat(payment.seatId);
-    }
+    const seatIds = payment.seatIds ?? [];
+    await Promise.all(seatIds.map((id) => this.tripsService.releaseSeat(id)));
   }
 
   async findOne(id: string) {
