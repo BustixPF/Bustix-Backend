@@ -32,7 +32,7 @@ export class PaymentsService {
     const trip = await this.tripsService.findOne(dto.tripId);
     await this.tripsService.reserveSeat(dto.tripId, dto.seatId);
 
-    const currency = 'usd';
+    const currency = 'cop';
     const description = `${trip.origin} - ${trip.destination}`;
 
     const payment = await this.paymentsRepository.save(

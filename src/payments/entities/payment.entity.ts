@@ -30,7 +30,7 @@ export class Payment {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column({ type: 'varchar', length: 10, default: 'usd' })
+  @Column({ type: 'varchar', length: 10, default: 'cop' })
   currency: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
