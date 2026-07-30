@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CompaniesRepository } from './companies.repository';
 import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
 import { Company } from './entities/company.entity';
+import { CompanyStatus } from '../common/company-status.enum';
 
 @Injectable()
 export class CompaniesService {
@@ -17,6 +22,7 @@ export class CompaniesService {
     return this.companiesRepo.createCompany({
       ...data,
       password: hashedPassword,
+      status: CompanyStatus.PENDING, // 👈 siempre inicia como pendiente
     });
   }
 
@@ -27,7 +33,7 @@ export class CompaniesService {
   async findOne(id: string): Promise<Company> {
     const company = await this.companiesRepo.findOne(id);
     if (!company) {
-      throw new BadRequestException('Compañía no encontrada');
+      throw new NotFoundException('Compañía no encontrada');
     }
     return company;
   }
@@ -36,10 +42,14 @@ export class CompaniesService {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 10);
     }
-    const updated = await this.companiesRepo.updateCompany(id, data);
-    if (!updated) {
-      throw new BadRequestException('Compañía no encontrada');
-    }
-    return updated;
+    return this.companiesRepo.updateCompany(id, data);
+  }
+
+  // ✅ Método para aprobar/rechazar empresa
+  async updateCompanyStatus(
+    id: string,
+    status: CompanyStatus,
+  ): Promise<Company> {
+    return this.companiesRepo.updateCompanyStatus(id, status);
   }
 }

@@ -25,17 +25,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService, 
-    GoogleStrategy, 
-    JwtStrategy, 
-    JwtAuthGuard, 
-  ],
-  exports: [
-    AuthService, 
-    JwtAuthGuard, 
-    PassportModule, 
-    JwtModule,
-  ],
+  providers: [AuthService, GoogleStrategy, JwtStrategy, JwtAuthGuard],
+  exports: [AuthService, JwtAuthGuard, PassportModule, JwtModule],
 })
 export class AuthModule {}
