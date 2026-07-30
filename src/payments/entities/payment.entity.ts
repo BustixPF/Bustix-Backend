@@ -24,8 +24,8 @@ export class Payment {
   @Column({ type: 'uuid', nullable: true })
   tripId?: string;
 
-  @Column({ type: 'uuid', nullable: true })
-  seatId?: string;
+  @Column({ type: 'uuid', array: true, nullable: true })
+  seatIds?: string[];
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
