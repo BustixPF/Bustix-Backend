@@ -24,13 +24,13 @@ export class Payment {
   @Column({ type: 'uuid', nullable: true })
   tripId?: string;
 
-  @Column({ type: 'uuid', nullable: true })
-  seatId?: string;
+  @Column({ type: 'uuid', array: true, nullable: true })
+  seatIds?: string[];
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column({ type: 'varchar', length: 10, default: 'usd' })
+  @Column({ type: 'varchar', length: 10, default: 'cop' })
   currency: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })

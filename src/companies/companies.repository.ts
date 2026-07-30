@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
+import { CompanyStatus } from '../common/company-status.enum';
 
 @Injectable()
 export class CompaniesRepository {
@@ -26,13 +27,27 @@ export class CompaniesRepository {
     return this.companyRepo.save(company);
   }
 
-  // Actualizar empresa
-  async updateCompany(
-    id: string,
-    data: Partial<Company>,
-  ): Promise<Company | null> {
+  // Actualizar empresa (ahora siempre devuelve Company)
+  async updateCompany(id: string, data: Partial<Company>): Promise<Company> {
     await this.companyRepo.update(id, data);
-    return this.companyRepo.findOne({ where: { id } });
+    const updated = await this.companyRepo.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Compañía con id ${id} no encontrada`);
+    }
+    return updated;
+  }
+
+  // Actualizar solo el estado de la empresa
+  async updateCompanyStatus(
+    id: string,
+    status: CompanyStatus,
+  ): Promise<Company> {
+    await this.companyRepo.update(id, { status });
+    const updated = await this.companyRepo.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Compañía con id ${id} no encontrada`);
+    }
+    return updated;
   }
 
   // Listar todas las empresas
