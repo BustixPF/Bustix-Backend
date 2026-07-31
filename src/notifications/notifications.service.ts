@@ -85,10 +85,10 @@ export class NotificationsService {
   private isMailConfigured(): boolean {
     return Boolean(
       environment.MAIL_HOST &&
-      environment.MAIL_PORT &&
-      environment.MAIL_USER &&
-      environment.MAIL_PASSWORD &&
-      environment.MAIL_FROM,
+        environment.MAIL_PORT &&
+        environment.MAIL_USER &&
+        environment.MAIL_PASSWORD &&
+        environment.MAIL_FROM,
     );
   }
 
