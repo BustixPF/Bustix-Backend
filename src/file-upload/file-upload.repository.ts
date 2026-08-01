@@ -26,8 +26,11 @@ export class FileUploadRepository {
     file: Express.Multer.File,
   ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
+      // 👇 Detectamos si es imagen o archivo crudo
+      const resourceType = file.mimetype.startsWith('image/') ? 'image' : 'raw';
+
       const uploadStream = this.cloudinaryProvider.uploader.upload_stream(
-        { resource_type: 'auto', folder: 'companies' },
+        { resource_type: resourceType, folder: 'companies' },
         (error?: UploadApiErrorResponse, result?: UploadApiResponse) => {
           if (error || !result) {
             return reject(
@@ -42,7 +45,6 @@ export class FileUploadRepository {
         return reject(new Error('El archivo no tiene buffer'));
       }
 
-      // Usamos la API oficial de Node para crear el stream
       const stream = Readable.from(file.buffer);
       stream.pipe(uploadStream);
     });
