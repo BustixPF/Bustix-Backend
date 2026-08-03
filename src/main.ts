@@ -21,7 +21,7 @@ async function bootstrap() {
   // Configuración flexible de CORS
   app.enableCors({
     origin: (origin, callback) => {
-      // Permite peticiones sin origin (como Postman/Swagger) o dominis de Vercel y Localhost
+      // Permite peticiones sin origin (como Postman/Swagger) o dominios de Vercel y Localhost
       if (
         !origin ||
         origin.includes('vercel.app') ||

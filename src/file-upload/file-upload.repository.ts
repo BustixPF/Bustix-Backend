@@ -21,12 +21,10 @@ export class FileUploadRepository {
     private readonly cloudinaryProvider: typeof cloudinary,
   ) {}
 
-  // Método interno para subir a Cloudinary
   private async uploadToCloudinary(
     file: Express.Multer.File,
   ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
-      // 👇 Detectamos si es imagen o archivo crudo
       const resourceType = file.mimetype.startsWith('image/') ? 'image' : 'raw';
 
       const uploadStream = this.cloudinaryProvider.uploader.upload_stream(
@@ -50,7 +48,6 @@ export class FileUploadRepository {
     });
   }
 
-  // Método público que usa uploadToCloudinary y guarda en la DB
   async saveFile(
     file: Express.Multer.File,
     companyId: string,

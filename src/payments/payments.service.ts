@@ -11,6 +11,7 @@ import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { environment } from '../config/environment';
 import { TripsService } from '../trips/trips.service';
 import { TicketsService } from '../tickets/tickets.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PaymentsService {
@@ -21,6 +22,7 @@ export class PaymentsService {
     private readonly paymentsRepository: Repository<Payment>,
     private readonly tripsService: TripsService,
     private readonly ticketsService: TicketsService,
+    private readonly notificationsService: NotificationsService,
   ) {
     if (!environment.STRIPE_SECRET_KEY) {
       throw new Error('Falta configurar STRIPE_SECRET_KEY en el .env');
@@ -166,6 +168,20 @@ export class PaymentsService {
           }),
         ),
       );
+
+      if (payment.user) {
+        await this.notificationsService.sendTicketPurchaseConfirmedEmail({
+          email: payment.user.email,
+          name: payment.user.name,
+          origin: trip?.origin ?? 'Origen no disponible',
+          destination: trip?.destination ?? 'Destino no disponible',
+          departureDate: trip?.departureDate ?? null,
+          seatCount: seatIds.length || 1,
+          totalAmount: Number(payment.amount),
+          currency: payment.currency,
+          paymentId: payment.id,
+        });
+      }
     }
   }
 
@@ -178,6 +194,24 @@ export class PaymentsService {
     await this.paymentsRepository.save(payment);
     const seatIds = payment.seatIds ?? [];
     await Promise.all(seatIds.map((id) => this.tripsService.releaseSeat(id)));
+
+    if (payment.userId) {
+      const trip = payment.tripId
+        ? await this.tripsService.findOne(payment.tripId)
+        : null;
+
+      if (payment.user) {
+        await this.notificationsService.sendPaymentCanceledEmail({
+          email: payment.user.email,
+          name: payment.user.name,
+          origin: trip?.origin ?? 'Origen no disponible',
+          destination: trip?.destination ?? 'Destino no disponible',
+          seatCount: seatIds.length || 1,
+          totalAmount: Number(payment.amount),
+          currency: payment.currency,
+        });
+      }
+    }
   }
 
   async findOne(id: string) {
