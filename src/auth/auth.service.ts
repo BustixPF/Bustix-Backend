@@ -80,7 +80,6 @@ export class AuthService {
         password: hashedPassword,
       });
 
-      // Envío asíncrono del mail sin bloquear el registro
       this.notificationsService
         .sendWelcomeEmail({
           email: newUser.email,

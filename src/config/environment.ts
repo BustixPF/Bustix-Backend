@@ -29,10 +29,7 @@ export const environment = {
   BACKEND_URL:
     process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`,
 
-  MAIL_HOST: process.env.MAIL_HOST || '',
-  MAIL_PORT: Number(process.env.MAIL_PORT) || 587,
-  MAIL_USER: process.env.MAIL_USER || '',
-  MAIL_PASSWORD: process.env.MAIL_PASSWORD || '',
+  MAILTRAP_API_TOKEN: process.env.MAILTRAP_API_TOKEN || '',
+  MAILTRAP_INBOX_ID: process.env.MAILTRAP_INBOX_ID || '',
   MAIL_FROM: process.env.MAIL_FROM || '',
-  MAIL_SECURE: process.env.MAIL_SECURE === 'true',
 };

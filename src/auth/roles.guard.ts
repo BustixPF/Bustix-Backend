@@ -20,13 +20,11 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    // Si no hay roles definidos queda por defecto (sin restriccion)
     if (!routRoles || routRoles.length === 0) {
       return true;
     }
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
-    // Si no existe user en el request => no autenticado
     if (!request.user) {
       throw new ForbiddenException('Usuario no autenticado.');
     }
@@ -43,7 +41,6 @@ export class RolesGuard implements CanActivate {
 
     const isAllowed = routRoles.some((role) => userRoles.includes(role));
 
-    // Cambie usuario no autenticados por este nuevo mensaje ahora que hay roles.
     if (!isAllowed) {
       throw new ForbiddenException('Acceso denegado: rol insuficiente.');
     }
