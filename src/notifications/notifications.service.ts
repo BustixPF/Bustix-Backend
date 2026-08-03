@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
 import { Role } from '../common/roles.enum';
 import { CompanyRequestStatus } from '../dashboard/entities/company-request.entity';
 import { RouteRequestType } from '../dashboard/entities/route-request.entity';
@@ -9,13 +8,12 @@ import { environment } from '../config/environment';
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly mailFrom = environment.MAIL_FROM;
-  private readonly transporter = this.createTransporter();
 
   async sendWelcomeEmail(payload: {
     email: string;
     name: string;
   }): Promise<void> {
-    await this.sendEmail({
+    return this.dispatchEmail({
       to: payload.email,
       subject: 'Bienvenido a BusTix',
       html: `
@@ -36,7 +34,7 @@ export class NotificationsService {
         ? 'aprobada'
         : 'rechazada';
 
-    await this.sendEmail({
+    return this.dispatchEmail({
       to: payload.email,
       subject: `Tu solicitud de empresa fue ${statusLabel}`,
       html: `<h2>Hola, ${payload.name}</h2>
@@ -50,7 +48,7 @@ export class NotificationsService {
     name: string;
     role: Role;
   }): Promise<void> {
-    await this.sendEmail({
+    return this.dispatchEmail({
       to: payload.email,
       subject: 'Tu rol en BusTix fue actualizado',
       html: `
@@ -71,7 +69,7 @@ export class NotificationsService {
     currency: string;
     paymentId: string;
   }): Promise<void> {
-    await this.sendEmail({
+    return this.dispatchEmail({
       to: payload.email,
       subject: 'Tu compra de pasajes fue confirmada',
       html: `
@@ -95,7 +93,7 @@ export class NotificationsService {
     totalAmount: number;
     currency: string;
   }): Promise<void> {
-    await this.sendEmail({
+    return this.dispatchEmail({
       to: payload.email,
       subject: 'Tu pago no fue completado',
       html: `
@@ -114,7 +112,7 @@ export class NotificationsService {
     name: string;
     companyName: string;
   }): Promise<void> {
-    await this.sendEmail({
+    return this.dispatchEmail({
       to: payload.email,
       subject: 'Recibimos tu solicitud de empresa',
       html: `
@@ -136,7 +134,7 @@ export class NotificationsService {
     const actionLabel =
       payload.type === RouteRequestType.Add ? 'alta de ruta' : 'baja de ruta';
 
-    await this.sendEmail({
+    return this.dispatchEmail({
       to: payload.email,
       subject: 'Recibimos tu solicitud de ruta',
       html: `
@@ -153,36 +151,39 @@ export class NotificationsService {
     });
   }
 
-  private createTransporter(): nodemailer.Transporter | null {
-    if (!this.isMailConfigured()) {
-      this.logger.warn(
-        'MAIL_HOST/MAIL_PORT/MAIL_USER/MAIL_PASSWORD/MAIL_FROM no estan configurados. Los emails se omitiran.',
-      );
-      return null;
-    }
-
-    return nodemailer.createTransport({
-      host: environment.MAIL_HOST,
-      port: environment.MAIL_PORT,
-      secure: environment.MAIL_SECURE,
-      auth: {
-        user: environment.MAIL_USER,
-        pass: environment.MAIL_PASSWORD,
-      },
-      connectionTimeout: 10_000,
-      greetingTimeout: 10_000,
-      socketTimeout: 10_000,
-    });
-  }
-
   private isMailConfigured(): boolean {
     return Boolean(
-      environment.MAIL_HOST &&
-        environment.MAIL_PORT &&
-        environment.MAIL_USER &&
-        environment.MAIL_PASSWORD &&
-        environment.MAIL_FROM,
+      environment.MAILTRAP_API_TOKEN &&
+      environment.MAILTRAP_INBOX_ID &&
+      environment.MAIL_FROM,
     );
+  }
+
+  private dispatchEmail(payload: {
+    to: string;
+    subject: string;
+    html: string;
+  }): Promise<void> {
+    if (!this.isMailConfigured()) {
+      this.logger.warn(
+        'MAILTRAP_API_TOKEN/MAILTRAP_INBOX_ID/MAIL_FROM no estan configurados. El email se omitira.',
+      );
+      return Promise.resolve();
+    }
+
+    void this.sendEmail(payload)
+      .then(() =>
+        this.logger.log(`Email enviado a ${payload.to}: ${payload.subject}`),
+      )
+      .catch((error: unknown) =>
+        this.logger.error(
+          `No se pudo enviar el email a ${payload.to}`,
+          error instanceof Error ? error.stack : undefined,
+        ),
+      );
+
+    // Email delivery must never delay the operation that triggered it.
+    return Promise.resolve();
   }
 
   private async sendEmail(payload: {
@@ -190,24 +191,52 @@ export class NotificationsService {
     subject: string;
     html: string;
   }): Promise<void> {
-    if (!this.transporter) {
-      return;
-    }
+    const timeoutController = new AbortController();
+    const timeout = setTimeout(() => timeoutController.abort(), 10_000);
 
     try {
-      await this.transporter.sendMail({
-        from: this.mailFrom,
-        to: payload.to,
-        subject: payload.subject,
-        html: payload.html,
-      });
-      this.logger.log(`Email enviado a ${payload.to}: ${payload.subject}`);
-    } catch (error) {
-      this.logger.error(
-        `No se pudo enviar el email a ${payload.to}`,
-        error instanceof Error ? error.stack : undefined,
+      const response = await fetch(
+        `https://sandbox.api.mailtrap.io/api/send/${encodeURIComponent(environment.MAILTRAP_INBOX_ID)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Api-Token': environment.MAILTRAP_API_TOKEN,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: this.parseMailFrom(),
+            to: [{ email: payload.to }],
+            subject: payload.subject,
+            html: payload.html,
+          }),
+          signal: timeoutController.signal,
+        },
       );
+
+      if (!response.ok) {
+        throw new Error(
+          `Mailtrap API respondio con ${response.status} ${response.statusText}`,
+        );
+      }
+    } finally {
+      clearTimeout(timeout);
     }
+  }
+
+  private parseMailFrom(): { email: string; name?: string } {
+    const addressWithName = this.mailFrom.match(
+      /^\s*"?([^"<]*)"?\s*<([^>]+)>\s*$/,
+    );
+
+    if (!addressWithName) {
+      return { email: this.mailFrom.trim() };
+    }
+
+    const [, name, email] = addressWithName;
+    return {
+      email: email.trim(),
+      ...(name.trim() ? { name: name.trim() } : {}),
+    };
   }
 
   private formatCurrency(amount: number, currency: string): string {
