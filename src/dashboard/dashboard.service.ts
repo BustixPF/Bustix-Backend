@@ -215,6 +215,14 @@ export class DashboardService {
     });
 
     const savedRouteRequest = await this.routeRequestRepo.save(routeRequest);
+    await this.notificationsService.sendRouteRequestReceivedEmail({
+      email: user.email,
+      name: user.name,
+      type: savedRouteRequest.type,
+      origin: savedRouteRequest.origin,
+      destination: savedRouteRequest.destination,
+      routeId: savedRouteRequest.routeId,
+    });
     return this.toRouteRequestResponse(savedRouteRequest);
   }
 
@@ -232,6 +240,12 @@ export class DashboardService {
     });
 
     const savedRouteRequest = await this.routeRequestRepo.save(routeRequest);
+    await this.notificationsService.sendRouteRequestReceivedEmail({
+      email: user.email,
+      name: user.name,
+      type: savedRouteRequest.type,
+      routeId: savedRouteRequest.routeId,
+    });
     return this.toRouteRequestResponse(savedRouteRequest);
   }
 
