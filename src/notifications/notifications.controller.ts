@@ -82,7 +82,8 @@ export class NotificationsController {
   })
   @ApiBody({ type: SendRoleChangedTestEmailDto })
   @ApiOkResponse({
-    description: 'Solicitud del correo de cambio de rol procesada correctamente',
+    description:
+      'Solicitud del correo de cambio de rol procesada correctamente',
     schema: {
       example: {
         message: 'Solicitud de email de cambio de rol procesada',
@@ -151,7 +152,8 @@ export class NotificationsController {
   })
   @ApiBody({ type: SendPaymentCanceledTestEmailDto })
   @ApiOkResponse({
-    description: 'Solicitud del correo de pago cancelado procesada correctamente',
+    description:
+      'Solicitud del correo de pago cancelado procesada correctamente',
     schema: {
       example: {
         message: 'Solicitud de email de pago cancelado procesada',
