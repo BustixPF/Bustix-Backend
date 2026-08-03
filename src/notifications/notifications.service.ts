@@ -20,8 +20,7 @@ export class NotificationsService {
       subject: 'Bienvenido a BusTix',
       html: `
         <h2>Hola, ${payload.name}</h2>
-        <p>Tu cuenta en BusTix fue creada correctamente.</p>
-        <p>Ya puedes iniciar sesion y usar la plataforma.</p>
+        <p>Bienvenido a BusTix. Gracias por registrarte en nuestra pagina.</p>
       `,
     });
   }
