@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   UseGuards,
   Redirect,
@@ -24,9 +25,9 @@ const isProduction =
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: isProduction, // En produccion DEBE ser true para HTTPS
-  sameSite: isProduction ? ('none' as const) : ('lax' as const), // 'none' permite cookies cross-origin entre Vercel y Railway
-  maxAge: 1000 * 60 * 60 * 24, // 24 Horas
+  secure: isProduction,
+  sameSite: isProduction ? ('none' as const) : ('lax' as const),
+  maxAge: 1000 * 60 * 60 * 24,
 };
 
 @ApiTags('Auth')
@@ -36,28 +37,29 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  @ApiOperation({ summary: 'Iniciar autenticación con Google' })
+  @ApiOperation({ summary: 'Iniciar autenticaci贸n con Google' })
   async getGoogle() {}
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   @Redirect()
-  async getGoogleCallback(
-    @Req() req: Request & { user: any },
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async getGoogleCallback(@Req() req: Request & { user: any }) {
     const data = await this.authService.googleLogin(req.user);
-
-    res.cookie('token', data.token, COOKIE_OPTIONS);
-
-    const frontendUrl = `${environment.FRONTEND_URL}/google-callback`;
+    const { token } = data as { token: string };
 
     return {
-      url: `${frontendUrl}?token=${data.token}&email=${encodeURIComponent(
-        data.user.email,
-      )}&name=${encodeURIComponent(data.user.name)}`,
+      url: `${environment.FRONTEND_URL}/api/auth/google/complete?token=${token}`,
       statusCode: 302,
     };
+  }
+
+  @Get('google/complete')
+  @ApiOperation({
+    summary: 'Termina el login de Google seteando la cookie same-site',
+  })
+  completeGoogleLogin(@Query('token') token: string, @Res() res: Response) {
+    res.cookie('token', token, COOKIE_OPTIONS);
+    return res.redirect(`${environment.FRONTEND_URL}/google-callback`);
   }
 
   @Post('signup')
@@ -69,7 +71,7 @@ export class AuthController {
 
   @Post('signin')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Inicio de sesión con credenciales' })
+  @ApiOperation({ summary: 'Inicio de sesi贸n con credenciales' })
   async signIn(
     @Body() credentials: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
@@ -86,13 +88,13 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Cerrar sesión y limpiar cookies' })
-  async logout(@Res({ passthrough: true }) res: Response) {
+  @ApiOperation({ summary: 'Cerrar sesi贸n y limpiar cookies' })
+  logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('token', {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
     });
-    return { message: 'Sesión cerrada correctamente' };
+    return { message: 'Sesi贸n cerrada correctamente' };
   }
 }
