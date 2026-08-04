@@ -12,7 +12,7 @@ describe('NotificationsService', () => {
 
     environment.MAILTRAP_API_TOKEN = 'test-token';
     environment.MAILTRAP_INBOX_ID = '123456';
-    environment.MAIL_FROM = 'BusTix <test@bustix.com>';
+    environment.MAIL_FROM = '"BusTix <test@bustix.com>"';
 
     const service = new NotificationsService();
 
@@ -29,7 +29,7 @@ describe('NotificationsService', () => {
     expect(request).toMatchObject({
       method: 'POST',
       headers: {
-        'Api-Token': 'test-token',
+        Authorization: 'Bearer test-token',
         'Content-Type': 'application/json',
       },
     });
