@@ -11,6 +11,8 @@ interface CreateTicketData {
   price: number;
   userId: string;
   companyId: string;
+  tripId?: string;
+  seatNumber?: number;
 }
 
 @Injectable()
@@ -27,6 +29,8 @@ export class TicketsService {
       price: data.price,
       user: { id: data.userId } as User,
       company: { id: data.companyId } as Company,
+      tripId: data.tripId,
+      seatNumber: data.seatNumber,
     });
     return this.ticketsRepository.save(ticket);
   }

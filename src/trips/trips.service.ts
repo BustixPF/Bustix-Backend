@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Trip } from './entities/trip.entity';
 import { Seat, SeatStatus } from './entities/seat.entity';
+import { Route } from '../routes/entities/routes.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
 
 @Injectable()
@@ -14,9 +15,20 @@ export class TripsService {
   constructor(
     @InjectRepository(Trip) private readonly tripsRepository: Repository<Trip>,
     @InjectRepository(Seat) private readonly seatsRepository: Repository<Seat>,
+    @InjectRepository(Route)
+    private readonly routesRepository: Repository<Route>,
   ) {}
 
   async create(dto: CreateTripDto) {
+    const route = await this.routesRepository.findOne({
+      where: { id: dto.routeId },
+    });
+    if (!route) {
+      throw new NotFoundException(
+        `No se encontró la ruta con id ${dto.routeId}`,
+      );
+    }
+
     const trip = this.tripsRepository.create({
       companyId: dto.companyId,
       origin: dto.origin,
@@ -24,6 +36,7 @@ export class TripsService {
       departureDate: new Date(dto.departureDate),
       price: dto.price,
       totalSeats: dto.totalSeats,
+      route,
     });
     const savedTrip = await this.tripsRepository.save(trip);
 
@@ -63,8 +76,6 @@ export class TripsService {
     });
     if (!seat)
       throw new NotFoundException('Asiento no encontrado para ese viaje');
-
-    // Update condicional: solo pasa si SIGUE disponible. Evita que dos personas compren el mismo asiento.
     const result = await this.seatsRepository.update(
       { id: seatId, status: SeatStatus.Available },
       { status: SeatStatus.Reserved },
@@ -80,6 +91,12 @@ export class TripsService {
       { id: seatId },
       { status: SeatStatus.Sold },
     );
+  }
+
+  async findSeatById(seatId: string) {
+    const seat = await this.seatsRepository.findOne({ where: { id: seatId } });
+    if (!seat) throw new NotFoundException('Asiento no encontrado');
+    return seat;
   }
 
   async releaseSeat(seatId: string) {

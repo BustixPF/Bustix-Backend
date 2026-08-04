@@ -14,6 +14,10 @@ export class CreateTripDto {
   @IsUUID()
   companyId: string;
 
+  /** Id de la ruta (Route) sobre la que se programa este viaje @example 1 */
+  @IsInt()
+  routeId: number;
+
   /** Ciudad de origen @example 'Bogotá' */
   @IsString()
   @MaxLength(100)
