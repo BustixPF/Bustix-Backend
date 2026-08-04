@@ -22,4 +22,13 @@ export class DashboardUserResponseDto {
 
   @ApiProperty({ enum: Role, example: Role.User })
   role: Role;
+
+  /**
+   * Empresa asociada (solo para Admin)
+   */
+  @ApiPropertyOptional({
+    example: 'e8a0d2f2-c9d8-4fb1-9168-dc311f5114b3',
+    nullable: true,
+  })
+  companyId?: string | null;
 }

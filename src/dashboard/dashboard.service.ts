@@ -139,11 +139,11 @@ export class DashboardService {
     await this.companyRequestRepo.save(request);
 
     if (payload.status === CompanyRequestStatus.Accepted) {
-      await this.companiesService.createCompany({
+      // Crear la empresa y capturar el objeto creado
+      const company = await this.companiesService.createCompany({
         name: request.name,
         email: request.email,
         nit: request.nit,
-
         phone: request.phone,
         password: request.password,
         confirmPassword: request.confirmPassword,
@@ -152,6 +152,7 @@ export class DashboardService {
       if (request.requestedBy) {
         await this.usersRepository.updateUser(request.requestedBy.id, {
           role: Role.Admin,
+          companyId: company.id,
         });
       }
     }
@@ -282,6 +283,7 @@ export class DashboardService {
       phone: user.phone ?? 0,
       address: user.address,
       role: user.role,
+      companyId: user.companyId ?? null,
     };
   }
 

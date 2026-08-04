@@ -200,7 +200,7 @@ export class NotificationsService {
         {
           method: 'POST',
           headers: {
-            'Api-Token': environment.MAILTRAP_API_TOKEN,
+            Authorization: `Bearer ${environment.MAILTRAP_API_TOKEN}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -214,8 +214,11 @@ export class NotificationsService {
       );
 
       if (!response.ok) {
+        const errorDetails = (await response.text()).trim();
         throw new Error(
-          `Mailtrap API respondio con ${response.status} ${response.statusText}`,
+          `Mailtrap API respondio con ${response.status} ${response.statusText}${
+            errorDetails ? `: ${errorDetails.slice(0, 1_000)}` : ''
+          }`,
         );
       }
     } finally {
@@ -224,12 +227,20 @@ export class NotificationsService {
   }
 
   private parseMailFrom(): { email: string; name?: string } {
-    const addressWithName = this.mailFrom.match(
+    const rawMailFrom = this.mailFrom.trim();
+    const hasWrappingQuotes =
+      rawMailFrom.length >= 2 &&
+      ((rawMailFrom.startsWith('"') && rawMailFrom.endsWith('"')) ||
+        (rawMailFrom.startsWith("'") && rawMailFrom.endsWith("'")));
+    const normalizedMailFrom = hasWrappingQuotes
+      ? rawMailFrom.slice(1, -1).trim()
+      : rawMailFrom;
+    const addressWithName = normalizedMailFrom.match(
       /^\s*"?([^"<]*)"?\s*<([^>]+)>\s*$/,
     );
 
     if (!addressWithName) {
-      return { email: this.mailFrom.trim() };
+      return { email: normalizedMailFrom };
     }
 
     const [, name, email] = addressWithName;

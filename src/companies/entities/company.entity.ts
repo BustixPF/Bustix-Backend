@@ -4,6 +4,7 @@ import { Ticket } from '../../tickets/entities/ticket.entity';
 import { Trip } from '../../trips/entities/trip.entity';
 import { Route } from '../../routes/entities/routes.entity';
 import { CompanyStatus } from '../../common/company-status.enum';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('companies')
 export class Company {
@@ -45,4 +46,10 @@ export class Company {
   // Relación con viajes
   @OneToMany(() => Trip, (trip) => trip.company)
   trips: Trip[];
+
+  /**
+   * Relación con los usuarios que son Admins de esta empresa
+   */
+  @OneToMany(() => User, (user) => user.company)
+  admins: User[];
 }

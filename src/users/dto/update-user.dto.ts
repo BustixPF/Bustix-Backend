@@ -7,48 +7,29 @@ import {
   IsStrongPassword,
   MaxLength,
   MinLength,
+  IsUUID,
 } from 'class-validator';
 import { Role } from '../../common/roles.enum';
 
 export class UpdateUserDto {
-  /**
-   * Nombre completo del usuario
-   * @example 'Usuario Prueba'
-   */
   @IsOptional()
   @IsString({ message: 'El nombre debe ser una cadena de texto' })
   @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
   @MaxLength(80, { message: 'El nombre no puede tener más de 80 caracteres' })
   name?: string;
 
-  /**
-   * Email válido, usado para login
-   * @example 'example@mail.com'
-   */
   @IsOptional()
   @IsEmail({}, { message: 'El email debe ser un email válido' })
   email?: string;
 
-  /**
-   * DNI / documento de identidad
-   * @example 40123456
-   */
   @IsOptional()
   @IsInt({ message: 'El DNI debe ser un número entero' })
   dni?: number;
 
-  /**
-   * Teléfono de contacto
-   * @example 1123456789
-   */
   @IsOptional()
   @IsInt({ message: 'El teléfono debe ser un número' })
   phone?: number;
 
-  /**
-   * Nueva contraseña. Debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo
-   * @example 'aaBB33##'
-   */
   @IsOptional()
   @IsString({ message: 'La contraseña debe ser una cadena de texto' })
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
@@ -69,10 +50,6 @@ export class UpdateUserDto {
   )
   password?: string;
 
-  /**
-   * Dirección, opcional
-   * @example 'Calle Falsa 123'
-   */
   @IsOptional()
   @IsString()
   @MinLength(3, { message: 'La dirección debe tener al menos 3 caracteres' })
@@ -82,7 +59,13 @@ export class UpdateUserDto {
   address?: string;
 
   @IsOptional()
-  @IsEnum(Role) 
+  @IsEnum(Role)
   role?: Role;
 
+  /**
+   * Empresa asociada (solo para Admin)
+   */
+  @IsOptional()
+  @IsUUID()
+  companyId?: string; // 🔑 nuevo campo
 }
