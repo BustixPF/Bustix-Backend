@@ -55,7 +55,6 @@ export class AdminController {
     return this.dashboardService.requestRoute(userId, payload);
   }
 
-  // Solicitar eliminar una ruta
   @Roles(Role.Admin)
   @Delete('routes/:id')
   @ApiOperation({ summary: 'Solicita la baja de una ruta' })
@@ -72,7 +71,6 @@ export class AdminController {
     return this.dashboardService.deleteRouteRequest(userId, id);
   }
 
-  // Historial de ventas de la empresa (filtros: usuario, destino, fecha)
   @Roles(Role.Admin)
   @Get('sales-history')
   @ApiOperation({ summary: 'Obtiene el historial de ventas' })

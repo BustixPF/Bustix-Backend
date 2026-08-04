@@ -14,7 +14,6 @@ import { DashboardSummaryResponseDto } from './dto/dashboard-summary-response.dt
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  // Endpoint de ejemplo para obtener un resumen general
   @Get('summary')
   @ApiOperation({ summary: 'Obtiene un resumen general del dashboard' })
   @ApiOkResponse({ type: DashboardSummaryResponseDto })

@@ -57,8 +57,8 @@ export class FileUploadController {
   })
   async uploadFileUser(
     @UploadedFile() file: Express.Multer.File,
-    @Param('companyId') companyId: string,
+    @Param('userId') userId: string,
   ) {
-    return this.fileUploadService.uploadFile(file, companyId);
+    return this.fileUploadService.uploadFile(file, userId);
   }
 }
