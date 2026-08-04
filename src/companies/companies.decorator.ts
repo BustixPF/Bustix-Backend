@@ -1,35 +1,85 @@
 import { applyDecorators, HttpCode } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Company } from './entities/company.entity';
+import { UpdateCompanyDto } from './dto/company.dto';
 
 export function createCompaniesDecorator() {
   return applyDecorators(
-    ApiOperation({ summary: 'Crea una companía' }),
-    HttpCode(200),
-    ApiResponse({ status: 200, description: 'Companía creada con éxito' }),
+    ApiOperation({ summary: 'Registrar una nueva empresa' }),
+    HttpCode(201),
+    ApiResponse({
+      status: 201,
+      description: 'Empresa creada exitosamente',
+      type: Company,
+    }),
     ApiResponse({
       status: 400,
-      description: 'Empresas ya existen, seeder no ejecutado',
+      description: 'Error en validación o contraseñas no coinciden',
     }),
   );
 }
 
 export function findAllCompaniesDecorator() {
   return applyDecorators(
-    ApiOperation({ summary: 'Trae todas las empresas' }),
+    ApiOperation({ summary: 'Listar todas las empresas' }),
     HttpCode(200),
-    ApiResponse({ status: 200, description: 'Companías obtenidas con éxito' }),
-    ApiResponse({ status: 400, description: 'Error al obtener las companías' }),
+    ApiResponse({
+      status: 200,
+      description: 'Listado de empresas',
+      type: [Company],
+    }),
   );
 }
 
 export function findCompaniesByIdDecorator() {
   return applyDecorators(
-    ApiOperation({ summary: 'Trae las empresas mediante su Id' }),
+    ApiOperation({ summary: 'Obtener una empresa por ID' }),
     HttpCode(200),
-    ApiResponse({ status: 200, description: 'Companías obtenidas con éxito' }),
     ApiResponse({
-      status: 400,
-      description: 'Error al obtener las companías mediante su id',
+      status: 200,
+      description: 'Empresa encontrada',
+      type: Company,
     }),
+    ApiResponse({ status: 404, description: 'Empresa no encontrada' }),
+  );
+}
+
+export function updateCompanyDecorator() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Actualizar datos de una empresa' }),
+    HttpCode(200),
+    ApiBody({ type: UpdateCompanyDto }),
+    ApiResponse({
+      status: 200,
+      description: 'Empresa actualizada',
+      type: Company,
+    }),
+    ApiResponse({ status: 404, description: 'Empresa no encontrada' }),
+  );
+}
+
+export function approveCompanyDecorator() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Aprobar empresa (cambiar estado a APPROVED)' }),
+    HttpCode(200),
+    ApiResponse({
+      status: 200,
+      description: 'Empresa aprobada',
+      type: Company,
+    }),
+    ApiResponse({ status: 404, description: 'Empresa no encontrada' }),
+  );
+}
+
+export function rejectCompanyDecorator() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Rechazar empresa (cambiar estado a REJECTED)' }),
+    HttpCode(200),
+    ApiResponse({
+      status: 200,
+      description: 'Empresa rechazada',
+      type: Company,
+    }),
+    ApiResponse({ status: 404, description: 'Empresa no encontrada' }),
   );
 }
