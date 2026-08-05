@@ -485,12 +485,25 @@ export class DashboardService {
   async getUserTickets(userId: string): Promise<TicketResponseDto[]> {
     const tickets = await this.ticketRepo.find({
       where: { user: { id: userId } },
-      relations: { company: true },
+      relations: { company: true, trip: true },
       order: { purchaseDate: 'DESC' },
     });
     return tickets.map((ticket) => this.toTicketResponse(ticket));
   }
 
+  private toTicketResponse(ticket: Ticket): TicketResponseDto {
+    return {
+      id: ticket.id,
+      origin: ticket.origin,
+      destination: ticket.destination,
+      price: Number(ticket.price),
+      purchaseDate: ticket.purchaseDate,
+      company: ticket.company ? this.toCompanyResponse(ticket.company) : null,
+      tripId: ticket.tripId ?? null,
+      seatNumber: ticket.seatNumber ?? null,
+      departureDate: ticket.trip?.departureDate ?? null,
+    };
+  }
   async getUserProfile(userId: string): Promise<DashboardUserResponseDto> {
     const user = await this.usersRepository.getUserById(userId);
     return this.toUserResponse(user);
@@ -567,17 +580,6 @@ export class DashboardService {
       documents: (company.documents ?? []).map((document) =>
         this.toDocumentResponse(document),
       ),
-    };
-  }
-
-  private toTicketResponse(ticket: Ticket): TicketResponseDto {
-    return {
-      id: ticket.id,
-      origin: ticket.origin,
-      destination: ticket.destination,
-      price: Number(ticket.price),
-      purchaseDate: ticket.purchaseDate,
-      company: ticket.company ? this.toCompanyResponse(ticket.company) : null,
     };
   }
 
