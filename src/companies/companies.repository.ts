@@ -41,8 +41,13 @@ export class CompaniesRepository {
   async updateCompanyStatus(
     id: string,
     status: CompanyStatus,
+    rejectionReason?: string,
   ): Promise<Company> {
-    await this.companyRepo.update(id, { status });
+    await this.companyRepo.update(id, {
+      status,
+      rejectionReason:
+        status === CompanyStatus.REJECTED ? rejectionReason : null,
+    });
     const updated = await this.companyRepo.findOne({ where: { id } });
     if (!updated) {
       throw new NotFoundException(`Compañía con id ${id} no encontrada`);

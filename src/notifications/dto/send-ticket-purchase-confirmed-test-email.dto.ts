@@ -1,11 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDateString,
+  IsArray,
   IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  IsInt,
   Min,
 } from 'class-validator';
 
@@ -46,6 +48,12 @@ export class SendTicketPurchaseConfirmedTestEmailDto {
   @IsNumber({}, { message: 'La cantidad de pasajes debe ser numerica' })
   @Min(1, { message: 'La cantidad de pasajes debe ser al menos 1' })
   seatCount: number;
+
+  @ApiPropertyOptional({ type: [Number], example: [5, 6] })
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  seatNumbers?: number[];
 
   @ApiProperty({ example: 170000, description: 'Monto total pagado' })
   @IsNumber({}, { message: 'El total debe ser numerico' })

@@ -10,6 +10,6 @@ import { Route } from './entities/routes.entity';
   imports: [TypeOrmModule.forFeature([Route, Company])],
   providers: [RoutesRepository, RoutesService],
   controllers: [RoutesController],
-  exports: [RoutesRepository],
+  exports: [RoutesRepository, RoutesService],
 })
 export class RoutesModule {}
