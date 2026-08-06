@@ -57,7 +57,6 @@ export class AdminController {
     return this.dashboardService.requestRoute(userId, payload);
   }
 
-  // Solicitar eliminar una ruta
   @Roles(Role.Admin)
   @Delete('routes/:id')
   @ApiOperation({ summary: 'Solicita la baja de una ruta' })
