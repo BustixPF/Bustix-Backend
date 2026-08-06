@@ -37,7 +37,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  @ApiOperation({ summary: 'Iniciar autenticaci贸n con Google' })
+  @ApiOperation({ summary: 'Iniciar autenticación con Google' })
   async getGoogle() {}
 
   @Get('google/callback')
@@ -71,7 +71,7 @@ export class AuthController {
 
   @Post('signin')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Inicio de sesi贸n con credenciales' })
+  @ApiOperation({ summary: 'Inicio de sesión con credenciales' })
   async signIn(
     @Body() credentials: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
@@ -88,13 +88,13 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Cerrar sesi贸n y limpiar cookies' })
+  @ApiOperation({ summary: 'Cerrar sesión y limpiar cookies' })
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('token', {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
     });
-    return { message: 'Sesi贸n cerrada correctamente' };
+    return { message: 'Sesión cerrada correctamente' };
   }
 }

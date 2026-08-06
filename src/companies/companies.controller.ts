@@ -1,8 +1,20 @@
-import { Controller, Post, Body, Get, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { Company } from './entities/company.entity';
-import { ApiTags, ApiBody } from '@nestjs/swagger';
-import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import { ApiBearerAuth, ApiTags, ApiBody } from '@nestjs/swagger';
+import {
+  CreateCompanyDto,
+  RejectCompanyDto,
+  UpdateCompanyDto,
+} from './dto/company.dto';
 import { CompanyStatus } from '../common/company-status.enum';
 import {
   createCompaniesDecorator,
@@ -12,6 +24,10 @@ import {
   approveCompanyDecorator,
   rejectCompanyDecorator,
 } from './companies.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../common/roles.enum';
 
 @ApiTags('companies')
 @Controller('companies')
@@ -47,6 +63,9 @@ export class CompaniesController {
   }
 
   @Patch(':id/approve')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
   @approveCompanyDecorator()
   async approve(@Param('id') id: string): Promise<Company> {
     return this.companiesService.updateCompanyStatus(
@@ -56,11 +75,18 @@ export class CompaniesController {
   }
 
   @Patch(':id/reject')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
   @rejectCompanyDecorator()
-  async reject(@Param('id') id: string): Promise<Company> {
+  async reject(
+    @Param('id') id: string,
+    @Body() body: RejectCompanyDto,
+  ): Promise<Company> {
     return this.companiesService.updateCompanyStatus(
       id,
       CompanyStatus.REJECTED,
+      body.reason,
     );
   }
 }

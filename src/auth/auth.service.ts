@@ -42,6 +42,10 @@ export class AuthService {
         name: `${firstName} ${lastName}`.trim(),
         profilePicture: picture,
       });
+      await this.notificationsService.sendWelcomeEmail({
+        email: user.email,
+        name: user.name,
+      });
     }
 
     const payload = { id: user.id, email: user.email, role: user.role };

@@ -17,11 +17,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
           }
           return token;
         },
-        // 2. Fallback para Header Authorization: Bearer <token> (Postman / Mobile / Swagger)
+        // 2. Fallback para Header Authorization: Bearer <token>
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
-      secretOrKey: environment.JWT_SECRET || 'ClaveSecretaJWT',
+      secretOrKey: environment.JWT_SECRET || 'default_secret',
     });
   }
 
@@ -34,6 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       id: payload.id ?? payload.sub,
       email: payload.email,
       role: payload.role,
+      companyId: payload.companyId ?? null,
     };
   }
 }

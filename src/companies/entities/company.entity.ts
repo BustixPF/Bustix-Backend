@@ -33,6 +33,9 @@ export class Company {
   })
   status: CompanyStatus; // ESTADO DE APROBACIÓN
 
+  @Column({ type: 'text', nullable: true })
+  rejectionReason?: string | null;
+
   @OneToMany(() => Document, (document) => document.company)
   documents: Document[];
 

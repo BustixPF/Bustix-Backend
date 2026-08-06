@@ -6,13 +6,13 @@ export function signUpDecorator() {
     ApiOperation({
       summary: 'Registra un usuario',
       description:
-        'Crea una cuenta nueva. Si el registro es exitoso, el sistema intenta enviar un email de bienvenida usando la configuracion SMTP actual.',
+        'Crea una cuenta nueva. Si el registro es exitoso, el sistema intenta enviar un email de bienvenida usando la API de Brevo.',
     }),
     HttpCode(200),
     ApiResponse({
       status: 200,
       description:
-        'Usuario registrado con éxito. Validar también que llegue el email de bienvenida en Mailtrap.',
+        'Usuario registrado con éxito. Validar también que llegue el email de bienvenida al destinatario.',
     }),
     ApiResponse({ status: 400, description: 'Las contraseñas no coinciden' }),
   );

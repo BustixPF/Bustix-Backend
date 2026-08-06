@@ -29,6 +29,10 @@ import { DashboardCompanyDetailResponseDto } from './dto/dashboard-company-detai
 import { SaleResponseDto } from './dto/sale-response.dto';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
 import { DashboardUserResponseDto } from './dto/dashboard-user-response.dto';
+import { RespondRouteRequestDto } from './dto/route-request.dto';
+import { RouteRequestResponseDto } from './dto/route-request-response.dto';
+import { RespondScheduleRequestDto } from './dto/schedule-request.dto';
+import { ScheduleRequestResponseDto } from './dto/schedule-request-response.dto';
 
 // Controlador para endpoints que usa SuperAdmin
 @ApiTags('Dashboard SuperAdmin')
@@ -68,6 +72,46 @@ export class SuperadminController {
     return this.dashboardService.getCompanyRequests();
   }
 
+  @Roles(Role.superAdmin)
+  @Get('route-requests')
+  @ApiOperation({ summary: 'Lista las solicitudes pendientes de rutas' })
+  @ApiOkResponse({ type: RouteRequestResponseDto, isArray: true })
+  async getRouteRequests(): Promise<RouteRequestResponseDto[]> {
+    return this.dashboardService.getRouteRequests();
+  }
+
+  @Roles(Role.superAdmin)
+  @Post('route-requests/:id/respond')
+  @ApiOperation({ summary: 'Aprueba o rechaza una solicitud de ruta' })
+  @ApiParam({ name: 'id' })
+  @ApiOkResponse({ type: RouteRequestResponseDto })
+  async respondRouteRequest(
+    @Param('id') id: string,
+    @Body() body: RespondRouteRequestDto,
+  ): Promise<RouteRequestResponseDto> {
+    return this.dashboardService.respondRouteRequest(id, body);
+  }
+
+  @Roles(Role.superAdmin)
+  @Get('schedule-requests')
+  @ApiOperation({ summary: 'Lista las solicitudes pendientes de horarios' })
+  @ApiOkResponse({ type: ScheduleRequestResponseDto, isArray: true })
+  async getScheduleRequests(): Promise<ScheduleRequestResponseDto[]> {
+    return this.dashboardService.getScheduleRequests();
+  }
+
+  @Roles(Role.superAdmin)
+  @Post('schedule-requests/:id/respond')
+  @ApiOperation({ summary: 'Aprueba o rechaza una solicitud de horario' })
+  @ApiParam({ name: 'id' })
+  @ApiOkResponse({ type: ScheduleRequestResponseDto })
+  async respondScheduleRequest(
+    @Param('id') id: string,
+    @Body() body: RespondScheduleRequestDto,
+  ): Promise<ScheduleRequestResponseDto> {
+    return this.dashboardService.respondScheduleRequest(id, body);
+  }
+
   // Aceptar/denegar solicitud de empresa
   @Roles(Role.superAdmin)
   @Post('company-requests/:id/respond')
@@ -83,7 +127,7 @@ export class SuperadminController {
   @ApiOkResponse({
     type: CompanyRequestResponseDto,
     description:
-      'Solicitud respondida correctamente. Validar también el email de aprobación o rechazo en Mailtrap.',
+      'Solicitud respondida correctamente. Validar también el email de aprobación o rechazo en el destinatario y en los logs de Brevo.',
   })
   @ApiBadRequestResponse({ description: 'La solicitud ya fue procesada' })
   @ApiNotFoundResponse({ description: 'Solicitud no encontrada' })
@@ -111,7 +155,7 @@ export class SuperadminController {
   @ApiOkResponse({
     type: DashboardUserResponseDto,
     description:
-      'Rol actualizado correctamente. Validar también el email de cambio de rol en Mailtrap.',
+      'Rol actualizado correctamente. Validar también el email de cambio de rol en el destinatario y en los logs de Brevo.',
   })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
   @ApiUnauthorizedResponse({ description: 'Token no proporcionado o invalido' })
