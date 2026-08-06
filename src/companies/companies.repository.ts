@@ -37,7 +37,15 @@ export class CompaniesRepository {
     return updated;
   }
 
-  // Actualizar solo el estado de la empresa
+  // Obtener empresas con estado PENDING
+  async findPendingCompanies(): Promise<Company[]> {
+    return this.companyRepo.find({
+      where: { status: CompanyStatus.PENDING },
+      order: { id: 'DESC' },
+    });
+  }
+
+  // Actualizar el estado de la empresa (incluye razón de rechazo opcional)
   async updateCompanyStatus(
     id: string,
     status: CompanyStatus,
@@ -48,10 +56,12 @@ export class CompaniesRepository {
       rejectionReason:
         status === CompanyStatus.REJECTED ? rejectionReason : null,
     });
+
     const updated = await this.companyRepo.findOne({ where: { id } });
     if (!updated) {
       throw new NotFoundException(`Compañía con id ${id} no encontrada`);
     }
+
     return updated;
   }
 

@@ -14,6 +14,7 @@ export enum PaymentStatus {
   Paid = 'paid',
   Failed = 'failed',
   Canceled = 'canceled',
+  Refunded = 'refunded',
 }
 
 @Entity({ name: 'payments' })

@@ -9,11 +9,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '../common/roles.enum';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -35,6 +38,15 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.paymentsService.findOne(id);
+  }
+
+  @Post(':id/refund')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin, Role.Admin) // Roles permitidos
+  @ApiOperation({ summary: 'Reembolsar o anular un pago (SuperAdmin)' })
+  refundPayment(@Param('id') id: string) {
+    return this.paymentsService.refundPayment(id);
   }
 
   @Post('webhook')
