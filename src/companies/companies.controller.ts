@@ -1,13 +1,28 @@
-import { Controller, Post, Body, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { Company } from './entities/company.entity';
-import { ApiTags, ApiBody, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import { ApiBearerAuth, ApiTags, ApiBody, ApiOperation } from '@nestjs/swagger';
+import {
+  CreateCompanyDto,
+  RejectCompanyDto,
+  UpdateCompanyDto,
+} from './dto/company.dto';
+import { CompanyStatus } from '../common/company-status.enum';
 import {
   createCompaniesDecorator,
   findAllCompaniesDecorator,
   findCompaniesByIdDecorator,
   updateCompanyDecorator,
+  approveCompanyDecorator,
+  rejectCompanyDecorator,
 } from './companies.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../common/roles.enum';
@@ -33,7 +48,7 @@ export class CompaniesController {
     return this.companiesService.findAll();
   }
 
-  // 1. RUTA ESTÁTICA PENDING (Debe ir ANTES de :id para no ser sobreescrita)
+  // 1. RUTAS ESTÁTICAS PRIMERO
   @Get('pending')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -43,7 +58,7 @@ export class CompaniesController {
     return this.companiesService.findPendingCompanies();
   }
 
-  // 2. RUTA ESPECÍFICA DE ESTADO (Debe ir ANTES del PATCH general :id)
+  // 2. RUTAS DE ACCIÓN/ESTADO ESPECÍFICAS
   @Patch(':id/status')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -56,7 +71,35 @@ export class CompaniesController {
     return this.companiesService.updateCompanyStatus(id, dto.status);
   }
 
-  // 3. RUTAS PARAMETRIZADAS POR ID
+  @Patch(':id/approve')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
+  @approveCompanyDecorator()
+  async approve(@Param('id') id: string) {
+    return this.companiesService.updateCompanyStatus(
+      id,
+      CompanyStatus.APPROVED,
+    );
+  }
+
+  @Patch(':id/reject')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
+  @rejectCompanyDecorator()
+  async reject(
+    @Param('id') id: string,
+    @Body() body: RejectCompanyDto,
+  ) {
+    return this.companiesService.updateCompanyStatus(
+      id,
+      CompanyStatus.REJECTED,
+      body?.reason,
+    );
+  }
+
+  // 3. RUTAS PARAMETRIZADAS GENERALES
   @Get(':id')
   @findCompaniesByIdDecorator()
   async findOne(@Param('id') id: string): Promise<Company> {

@@ -29,7 +29,7 @@ export const environment = {
   BACKEND_URL:
     process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`,
 
-  MAILTRAP_API_TOKEN: process.env.MAILTRAP_API_TOKEN || '',
-  MAILTRAP_INBOX_ID: process.env.MAILTRAP_INBOX_ID || '',
-  MAIL_FROM: process.env.MAIL_FROM || '',
+  BREVO_API_KEY: process.env.BREVO_API_KEY || '',
+  BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || '',
+  BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME || 'BusTix',
 };

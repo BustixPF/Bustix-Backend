@@ -10,6 +10,11 @@ import { Company } from './entities/company.entity';
 import { CompanyStatus } from '../common/company-status.enum';
 import { NotificationsService } from '../notifications/notifications.service';
 
+interface CreateCompanyOptions {
+  notifyPending?: boolean;
+  status?: CompanyStatus;
+}
+
 @Injectable()
 export class CompaniesService {
   constructor(
@@ -17,7 +22,10 @@ export class CompaniesService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  async createCompany(data: CreateCompanyDto): Promise<Company> {
+  async createCompany(
+    data: CreateCompanyDto,
+    options: CreateCompanyOptions = {},
+  ): Promise<Company> {
     if (data.password !== data.confirmPassword) {
       throw new BadRequestException('Las contraseñas no coinciden');
     }
@@ -26,14 +34,16 @@ export class CompaniesService {
     const company = await this.companiesRepo.createCompany({
       ...data,
       password: hashedPassword,
-      status: CompanyStatus.PENDING, // 👈 siempre inicia como pendiente
+      status: options.status ?? CompanyStatus.PENDING,
     });
 
-    await this.notificationsService.sendCompanyRequestReceivedEmail({
-      email: company.email,
-      name: company.name,
-      companyName: company.name,
-    });
+    if (options.notifyPending !== false) {
+      await this.notificationsService.sendCompanyRequestReceivedEmail({
+        email: company.email,
+        name: company.name,
+        companyName: company.name,
+      });
+    }
 
     return company;
   }
@@ -57,21 +67,34 @@ export class CompaniesService {
     return this.companiesRepo.updateCompany(id, data);
   }
 
- async updateCompanyStatus(id: string, status: CompanyStatus) {
-  if (status !== CompanyStatus.APPROVED && status !== CompanyStatus.REJECTED) {
-    throw new BadRequestException('El estado debe ser APPROVED o REJECTED');
+  // ✅ Método para aprobar/rechazar empresa con validación y envío de notificación
+  async updateCompanyStatus(
+    id: string,
+    status: CompanyStatus,
+    rejectionReason?: string,
+  ): Promise<Company> {
+    if (status !== CompanyStatus.APPROVED && status !== CompanyStatus.REJECTED) {
+      throw new BadRequestException('El estado debe ser APPROVED o REJECTED');
+    }
+
+    const company = await this.companiesRepo.updateCompanyStatus(
+      id,
+      status,
+      rejectionReason,
+    );
+
+    await this.notificationsService.sendCompanyRequestDecisionEmail({
+      email: company.email,
+      name: company.name,
+      status,
+      message: rejectionReason,
+    });
+
+    return company;
   }
 
-  const company = await this.companiesRepo.updateCompanyStatus(id, status);
-
-  return {
-    message: `La empresa ha sido ${status === CompanyStatus.APPROVED ? 'aprobada' : 'rechazada'} exitosamente.`,
-    company,
-  };
-}
-
-// ✅ Obtener todas las empresas con estado PENDING
-async findPendingCompanies() {
-  return this.companiesRepo.findPendingCompanies();
-}
+  // ✅ Obtener todas las empresas con estado PENDING
+  async findPendingCompanies(): Promise<Company[]> {
+    return this.companiesRepo.findPendingCompanies();
+  }
 }

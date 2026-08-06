@@ -19,7 +19,7 @@ const config: DataSourceOptions = {
   logging: false,
   synchronize: false, // Cambiar a false en producción
   dropSchema: false, // Cambiar a false en producción
-};
+}
 
 export const typeOrmConfig = registerAs('typeorm', () => config);
 export const connectionSource = new DataSource(config);

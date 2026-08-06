@@ -29,6 +29,15 @@ export class RouteRequest {
   @Column('text', { array: true, nullable: true })
   stops?: string[];
 
+  @Column({ type: 'int', nullable: true })
+  duration?: number;
+
+  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true })
+  price?: number;
+
+  @Column({ type: 'uuid', nullable: true })
+  companyId?: string;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   routeId?: string;
 
@@ -38,6 +47,9 @@ export class RouteRequest {
     default: RouteRequestStatus.Pending,
   })
   status: RouteRequestStatus;
+
+  @Column({ type: 'text', nullable: true })
+  message?: string;
   // Agregado lo de abajo por la creacion del Dashboard, para poder ver los tickets y requests de cada usuario
   @ManyToOne(() => User, (user) => user.routeRequests, {
     nullable: true,

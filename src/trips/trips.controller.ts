@@ -23,7 +23,7 @@ export class TripsController {
   @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.superAdmin)
+  @Roles(Role.superAdmin)
   create(@Body() dto: CreateTripDto) {
     return this.tripsService.create(dto);
   }
