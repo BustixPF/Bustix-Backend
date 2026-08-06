@@ -13,6 +13,7 @@ import { TripsModule } from './trips/trips.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { RoutesModule } from './routes/routes.module';
 import { SeederModule } from './seeder/seeder.module';
+import { MetricsModule } from './metrics/metric.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SeederModule } from './seeder/seeder.module';
     TicketsModule,
     RoutesModule,
     SeederModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

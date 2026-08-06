@@ -11,6 +11,7 @@ import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { environment } from '../config/environment';
 import { TripsService } from '../trips/trips.service';
 import { TicketsService } from '../tickets/tickets.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PaymentsService {
@@ -21,6 +22,7 @@ export class PaymentsService {
     private readonly paymentsRepository: Repository<Payment>,
     private readonly tripsService: TripsService,
     private readonly ticketsService: TicketsService,
+    private readonly notificationsService: NotificationsService,
   ) {
     if (!environment.STRIPE_SECRET_KEY) {
       throw new Error('Falta configurar STRIPE_SECRET_KEY en el .env');
@@ -189,4 +191,58 @@ export class PaymentsService {
     if (!payment) throw new NotFoundException('Pago no encontrado');
     return payment;
   }
+
+  async refundPayment(paymentId: string) {
+  const payment = await this.paymentsRepository.findOne({
+    where: { id: paymentId },
+    relations: { user: true },
+  });
+
+  if (!payment) {
+    throw new NotFoundException('Pago no encontrado');
+  }
+
+  if (payment.status !== PaymentStatus.Paid) {
+    throw new BadRequestException('Solo se pueden reembolsar pagos con estado PAID');
+  }
+
+  if (!payment.stripePaymentIntentId) {
+    throw new BadRequestException('El pago no cuenta con un ID de transacción de Stripe válido');
+  }
+
+  // 1. Solicitar el reembolso a Stripe
+  try {
+    await this.stripe.refunds.create({
+      payment_intent: payment.stripePaymentIntentId,
+    });
+  } catch (error) {
+    throw new BadRequestException(`Error al procesar el reembolso en Stripe: ${(error as Error).message}`);
+  }
+
+  // 2. Actualizar el estado del pago en BD
+  payment.status = PaymentStatus.Refunded;
+  await this.paymentsRepository.save(payment);
+
+  // 3. Liberar los asientos ocupados
+  const seatIds = payment.seatIds ?? [];
+  if (seatIds.length > 0) {
+    await Promise.all(seatIds.map((id) => this.tripsService.releaseSeat(id)));
+  }
+
+  // 4. (Opcional) Notificar al usuario vía correo
+  if (payment.user?.email) {
+    const trip = payment.tripId ? await this.tripsService.findOne(payment.tripId) : null;
+    await this.notificationsService.sendPaymentCanceledEmail({
+      email: payment.user.email,
+      name: payment.user.name ?? 'Usuario',
+      origin: trip?.origin ?? 'N/A',
+      destination: trip?.destination ?? 'N/A',
+      seatCount: seatIds.length,
+      totalAmount: Number(payment.amount),
+      currency: payment.currency,
+    }).catch(() => null);
+  }
+
+  return { message: 'Pago reembolsado correctamente', paymentId: payment.id };
+}
 }

@@ -57,11 +57,21 @@ export class CompaniesService {
     return this.companiesRepo.updateCompany(id, data);
   }
 
-  // ✅ Método para aprobar/rechazar empresa
-  async updateCompanyStatus(
-    id: string,
-    status: CompanyStatus,
-  ): Promise<Company> {
-    return this.companiesRepo.updateCompanyStatus(id, status);
+ async updateCompanyStatus(id: string, status: CompanyStatus) {
+  if (status !== CompanyStatus.APPROVED && status !== CompanyStatus.REJECTED) {
+    throw new BadRequestException('El estado debe ser APPROVED o REJECTED');
   }
+
+  const company = await this.companiesRepo.updateCompanyStatus(id, status);
+
+  return {
+    message: `La empresa ha sido ${status === CompanyStatus.APPROVED ? 'aprobada' : 'rechazada'} exitosamente.`,
+    company,
+  };
+}
+
+// ✅ Obtener todas las empresas con estado PENDING
+async findPendingCompanies() {
+  return this.companiesRepo.findPendingCompanies();
+}
 }

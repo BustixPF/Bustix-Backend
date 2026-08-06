@@ -37,18 +37,21 @@ export class CompaniesRepository {
     return updated;
   }
 
-  // Actualizar solo el estado de la empresa
-  async updateCompanyStatus(
-    id: string,
-    status: CompanyStatus,
-  ): Promise<Company> {
-    await this.companyRepo.update(id, { status });
-    const updated = await this.companyRepo.findOne({ where: { id } });
-    if (!updated) {
-      throw new NotFoundException(`Compañía con id ${id} no encontrada`);
-    }
-    return updated;
+async findPendingCompanies(): Promise<Company[]> {
+  return this.companyRepo.find({
+    where: { status: CompanyStatus.PENDING },
+    order: { id: 'DESC' },
+  });
+}
+
+async updateCompanyStatus(id: string, status: CompanyStatus): Promise<Company> {
+  const company = await this.findOne(id);
+  if (!company) {
+    throw new NotFoundException('Empresa no encontrada');
   }
+  company.status = status;
+  return this.companyRepo.save(company);
+}
 
   // Listar todas las empresas
   async findAll(): Promise<Company[]> {
