@@ -12,14 +12,24 @@ import { UsersModule } from '../users/users.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ScheduleRequest } from './entities/schedule-request.entity';
+import { RoutesModule } from '../routes/routes.module';
+import { TripsModule } from '../trips/trips.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Ticket, RouteRequest, CompanyRequest]),
+    TypeOrmModule.forFeature([
+      Ticket,
+      RouteRequest,
+      CompanyRequest,
+      ScheduleRequest,
+    ]),
     UsersModule,
     CompaniesModule,
     AuthModule,
     NotificationsModule,
+    RoutesModule,
+    TripsModule,
   ],
   controllers: [
     DashboardController,

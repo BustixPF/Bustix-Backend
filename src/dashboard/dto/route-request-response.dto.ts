@@ -24,6 +24,15 @@ export class RouteRequestResponseDto {
   })
   stops?: string[];
 
+  @ApiPropertyOptional({ example: 360 })
+  duration?: number;
+
+  @ApiPropertyOptional({ example: 85000 })
+  price?: number;
+
+  @ApiPropertyOptional()
+  companyId?: string;
+
   @ApiPropertyOptional({ example: 'route-123' })
   routeId?: string;
 
@@ -32,6 +41,9 @@ export class RouteRequestResponseDto {
     example: RouteRequestStatus.Pending,
   })
   status: RouteRequestStatus;
+
+  @ApiPropertyOptional()
+  message?: string;
 
   @ApiPropertyOptional({ type: () => DashboardUserResponseDto, nullable: true })
   requestedBy: DashboardUserResponseDto | null;

@@ -11,6 +11,7 @@ import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { environment } from '../config/environment';
 import { TripsService } from '../trips/trips.service';
 import { TicketsService } from '../tickets/tickets.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PaymentsService {
@@ -21,6 +22,7 @@ export class PaymentsService {
     private readonly paymentsRepository: Repository<Payment>,
     private readonly tripsService: TripsService,
     private readonly ticketsService: TicketsService,
+    private readonly notificationsService: NotificationsService,
   ) {
     if (!environment.STRIPE_SECRET_KEY) {
       throw new Error('Falta configurar STRIPE_SECRET_KEY en el .env');
@@ -154,8 +156,10 @@ export class PaymentsService {
           ? Number(payment.amount) / seatIds.length
           : Number(payment.amount);
 
-      await Promise.all(
-        (seatIds.length > 0 ? seatIds : [null]).map(async (seatId) => {
+      const ticketSeatIds: Array<string | null> =
+        seatIds.length > 0 ? seatIds : [null];
+      const tickets = await Promise.all(
+        ticketSeatIds.map(async (seatId) => {
           const seat = seatId
             ? await this.tripsService.findSeatById(seatId)
             : null;
@@ -170,6 +174,23 @@ export class PaymentsService {
           });
         }),
       );
+
+      if (payment.user && trip) {
+        await this.notificationsService.sendTicketPurchaseConfirmedEmail({
+          email: payment.user.email,
+          name: payment.user.name,
+          origin: trip.origin,
+          destination: trip.destination,
+          departureDate: trip.departureDate,
+          seatCount: tickets.length,
+          seatNumbers: tickets
+            .map((ticket) => ticket.seatNumber)
+            .filter((seatNumber): seatNumber is number => seatNumber != null),
+          totalAmount: Number(payment.amount),
+          currency: payment.currency,
+          paymentId: payment.id,
+        });
+      }
     }
   }
 

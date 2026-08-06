@@ -6,9 +6,15 @@ import {
   Delete,
   Param,
   Body,
+  UseGuards,
 } from '@nestjs/common';
 import { RoutesService } from './routes.service';
 import { Route } from './entities/routes.entity';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../common/roles.enum';
 
 @Controller('routes')
 export class RoutesController {
@@ -26,11 +32,17 @@ export class RoutesController {
   }
 
   @Post()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
   async create(@Body() routeData: Partial<Route>): Promise<Route> {
     return this.routesService.create(routeData);
   }
 
   @Put(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
   async update(
     @Param('id') id: number,
     @Body() routeData: Partial<Route>,
@@ -39,6 +51,9 @@ export class RoutesController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
   async delete(@Param('id') id: number): Promise<void> {
     return this.routesService.delete(id);
   }

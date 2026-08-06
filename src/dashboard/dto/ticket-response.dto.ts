@@ -22,4 +22,13 @@ export class TicketResponseDto {
     nullable: true,
   })
   company: DashboardCompanyResponseDto | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  tripId?: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  seatNumber?: number | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  departureDate?: Date | null;
 }

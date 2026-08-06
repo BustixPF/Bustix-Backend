@@ -12,4 +12,7 @@ export class DashboardSummaryResponseDto {
 
   @ApiProperty({ example: 7 })
   pendingRouteRequests: number;
+
+  @ApiProperty({ example: 3 })
+  pendingScheduleRequests: number;
 }

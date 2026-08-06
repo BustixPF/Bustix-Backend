@@ -1,7 +1,7 @@
 import { applyDecorators, HttpCode } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { Company } from './entities/company.entity';
-import { UpdateCompanyDto } from './dto/company.dto';
+import { RejectCompanyDto, UpdateCompanyDto } from './dto/company.dto';
 
 export function createCompaniesDecorator() {
   return applyDecorators(
@@ -74,6 +74,7 @@ export function approveCompanyDecorator() {
 export function rejectCompanyDecorator() {
   return applyDecorators(
     ApiOperation({ summary: 'Rechazar empresa (cambiar estado a REJECTED)' }),
+    ApiBody({ type: RejectCompanyDto }),
     HttpCode(200),
     ApiResponse({
       status: 200,

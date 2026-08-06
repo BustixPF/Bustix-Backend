@@ -7,10 +7,8 @@ import {
   MinLength,
   IsStrongPassword,
   IsNumberString,
-  IsEnum,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { CompanyStatus } from '../../common/company-status.enum';
 
 export class CreateCompanyDto {
   @ApiProperty({
@@ -90,14 +88,16 @@ export class UpdateCompanyDto {
   @MaxLength(15)
   @IsStrongPassword()
   password?: string;
+}
 
+export class RejectCompanyDto {
   @ApiProperty({
-    enum: CompanyStatus,
-    example: CompanyStatus.APPROVED,
-    description: 'Estado de la empresa (pending, approved, rejected)',
-    required: false,
+    example: 'La documentacion de la empresa esta incompleta.',
+    description: 'Motivo que recibira la empresa en el email de rechazo',
   })
-  @IsOptional()
-  @IsEnum(CompanyStatus)
-  status?: CompanyStatus;
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(500)
+  reason: string;
 }

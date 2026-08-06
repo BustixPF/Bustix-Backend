@@ -30,6 +30,8 @@ import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-requ
 import { RouteRequestResponseDto } from './dto/route-request-response.dto';
 import { SaleResponseDto } from './dto/sale-response.dto';
 import { SalesQueryDto } from './dto/sales-query.dto';
+import { CreateScheduleRequestDto } from './dto/schedule-request.dto';
+import { ScheduleRequestResponseDto } from './dto/schedule-request-response.dto';
 
 // Controlador para endpoints del Admin (dueño de empresa)
 @ApiTags('Dashboard Admin')
@@ -71,6 +73,21 @@ export class AdminController {
     return this.dashboardService.deleteRouteRequest(userId, id);
   }
 
+  @Roles(Role.Admin)
+  @Post('schedules')
+  @ApiOperation({ summary: 'Solicita la creación de un nuevo horario' })
+  @ApiOkResponse({ type: ScheduleRequestResponseDto })
+  @ApiBadRequestResponse({ description: 'Datos de horario invalidos' })
+  @ApiUnauthorizedResponse({ description: 'Token no proporcionado o invalido' })
+  @ApiForbiddenResponse({ description: 'Rol insuficiente' })
+  async requestSchedule(
+    @Req() request: AuthenticatedRequest,
+    @Body() payload: CreateScheduleRequestDto,
+  ): Promise<ScheduleRequestResponseDto> {
+    return this.dashboardService.requestSchedule(request.user!.id, payload);
+  }
+
+  // Historial de ventas de la empresa (filtros: usuario, destino, fecha)
   @Roles(Role.Admin)
   @Get('sales-history')
   @ApiOperation({ summary: 'Obtiene el historial de ventas' })

@@ -1,15 +1,39 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '../common/roles.enum';
 import { NotificationsService } from './notifications.service';
 import { SendTestEmailDto } from './dto/send-test-email.dto';
 import { SendCompanyRequestDecisionTestEmailDto } from './dto/send-company-request-decision-test-email.dto';
 import { SendRoleChangedTestEmailDto } from './dto/send-role-changed-test-email.dto';
 import { SendTicketPurchaseConfirmedTestEmailDto } from './dto/send-ticket-purchase-confirmed-test-email.dto';
-import { SendPaymentCanceledTestEmailDto } from './dto/send-payment-canceled-test-email.dto';
 import { SendCompanyRequestReceivedTestEmailDto } from './dto/send-company-request-received-test-email.dto';
 import { SendRouteRequestReceivedTestEmailDto } from './dto/send-route-request-received-test-email.dto';
+import { SendTravelReminderTestEmailDto } from './dto/send-travel-reminder-test-email.dto';
 
 @ApiTags('notifications')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Token no proporcionado o invalido' })
+@ApiForbiddenResponse({ description: 'Rol insuficiente' })
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.superAdmin)
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
@@ -136,47 +160,13 @@ export class NotificationsController {
       totalAmount: dto.totalAmount,
       currency: dto.currency,
       paymentId: dto.paymentId,
+      seatNumbers: dto.seatNumbers,
     });
 
     return {
       message: 'Solicitud de email de compra confirmada procesada',
       email: dto.email,
       paymentId: dto.paymentId,
-    };
-  }
-
-  @Post('test-payment-canceled-email')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Enviar un email de prueba para pago cancelado o expirado',
-  })
-  @ApiBody({ type: SendPaymentCanceledTestEmailDto })
-  @ApiOkResponse({
-    description:
-      'Solicitud del correo de pago cancelado procesada correctamente',
-    schema: {
-      example: {
-        message: 'Solicitud de email de pago cancelado procesada',
-        email: 'comprador@bustix.com',
-      },
-    },
-  })
-  async sendPaymentCanceledTestEmail(
-    @Body() dto: SendPaymentCanceledTestEmailDto,
-  ) {
-    await this.notificationsService.sendPaymentCanceledEmail({
-      email: dto.email,
-      name: dto.name ?? 'Usuario de prueba',
-      origin: dto.origin,
-      destination: dto.destination,
-      seatCount: dto.seatCount,
-      totalAmount: dto.totalAmount,
-      currency: dto.currency,
-    });
-
-    return {
-      message: 'Solicitud de email de pago cancelado procesada',
-      email: dto.email,
     };
   }
 
@@ -246,6 +236,40 @@ export class NotificationsController {
       message: 'Solicitud de email de solicitud de ruta procesada',
       email: dto.email,
       type: dto.type,
+    };
+  }
+
+  @Post('test-travel-reminder-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Enviar un recordatorio de viaje de prueba' })
+  @ApiBody({ type: SendTravelReminderTestEmailDto })
+  @ApiOkResponse({
+    description: 'Recordatorio enviado mediante Brevo',
+    schema: {
+      example: {
+        message: 'Email de recordatorio enviado',
+        email: 'pasajero@example.com',
+        hoursBefore: 48,
+      },
+    },
+  })
+  async sendTravelReminderTestEmail(
+    @Body() dto: SendTravelReminderTestEmailDto,
+  ) {
+    await this.notificationsService.sendTravelReminderEmail({
+      email: dto.email,
+      name: dto.name ?? 'Usuario de prueba',
+      origin: dto.origin,
+      destination: dto.destination,
+      departureDate: new Date(dto.departureDate),
+      seatNumbers: dto.seatNumbers,
+      hoursBefore: dto.hoursBefore,
+    });
+
+    return {
+      message: 'Email de recordatorio enviado',
+      email: dto.email,
+      hoursBefore: dto.hoursBefore,
     };
   }
 }
