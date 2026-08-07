@@ -15,6 +15,8 @@ import { RoutesModule } from './routes/routes.module';
 import { SeederModule } from './seeder/seeder.module';
 import { MetricsModule } from './metrics/metric.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ChatbotModule } from './chatbot/chatbot.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -38,6 +40,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     TicketsModule,
     RoutesModule,
     SeederModule,
+    ChatbotModule,
     MetricsModule,
   ],
   controllers: [AppController],
