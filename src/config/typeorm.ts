@@ -17,9 +17,9 @@ const config: DataSourceOptions = {
   entities: ['dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
   logging: false,
-  synchronize: false, // Cambiar a false en producción
-  dropSchema: false, // Cambiar a false en producción
-}
+  synchronize: false,
+  dropSchema: false,
+};
 
 export const typeOrmConfig = registerAs('typeorm', () => config);
 export const connectionSource = new DataSource(config);

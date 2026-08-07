@@ -189,6 +189,7 @@ export class PaymentsService {
           totalAmount: Number(payment.amount),
           currency: payment.currency,
           paymentId: payment.id,
+          companyName: trip.company.name,
         });
       }
     }

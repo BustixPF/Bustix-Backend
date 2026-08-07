@@ -4,10 +4,13 @@ import { CompanyRequestStatus } from '../dashboard/entities/company-request.enti
 import { RouteRequestType } from '../dashboard/entities/route-request.entity';
 import { environment } from '../config/environment';
 import { CompanyStatus } from '../common/company-status.enum';
+import { EmailTemplatesService } from './email-templates.service';
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
+
+  constructor(private readonly templatesService: EmailTemplatesService) {}
 
   async sendWelcomeEmail(payload: {
     email: string;
@@ -16,10 +19,10 @@ export class NotificationsService {
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Bienvenido a BusTix',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>Bienvenido a BusTix. Gracias por registrarte en nuestra pagina.</p>
-      `,
+      html: this.templatesService.render('01-registro-usuario.html', {
+        nombre: payload.name,
+        url_buscar: this.frontendUrl,
+      }),
     });
   }
 
@@ -37,9 +40,18 @@ export class NotificationsService {
     return this.dispatchEmail({
       to: payload.email,
       subject: `Tu solicitud de empresa fue ${statusLabel}`,
-      html: `<h2>Hola, ${payload.name}</h2>
-        <p>Tu solicitud de empresa fue <strong>${statusLabel}</strong>.</p>
-        ${payload.message ? `<p>Mensaje del equipo: ${payload.message}</p>` : ''}`,
+      html: this.templatesService.render(
+        isAccepted ? '03-empresa-aprobada.html' : '04-empresa-rechazada.html',
+        isAccepted
+          ? {
+              empresa: payload.name,
+              url_panel: this.frontendUrl,
+            }
+          : {
+              empresa: payload.name,
+              motivo_rechazo: payload.message ?? 'No se especifico un motivo.',
+            },
+      ),
     });
   }
 
@@ -47,14 +59,17 @@ export class NotificationsService {
     email: string;
     name: string;
     role: Role;
+    previousRole?: Role;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Tu rol en BusTix fue actualizado',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>Tu rol en la plataforma ahora es: <strong>${payload.role}</strong>.</p>
-      `,
+      html: this.templatesService.render('05-cambio-rol.html', {
+        rol_anterior: payload.previousRole ?? 'No disponible',
+        nuevo_rol: payload.role,
+        fecha_cambio: this.formatDateOnly(new Date()),
+        url_cuenta: this.frontendUrl,
+      }),
     });
   }
 
@@ -69,24 +84,21 @@ export class NotificationsService {
     currency: string;
     paymentId: string;
     seatNumbers?: number[];
+    companyName?: string;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Tu compra de pasajes fue confirmada',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>Tu compra fue confirmada correctamente.</p>
-        <p><strong>Ruta:</strong> ${payload.origin} - ${payload.destination}</p>
-        <p><strong>Salida:</strong> ${this.formatDate(payload.departureDate)}</p>
-        <p><strong>Cantidad de pasajes:</strong> ${payload.seatCount}</p>
-        ${
-          payload.seatNumbers?.length
-            ? `<p><strong>Asientos:</strong> ${payload.seatNumbers.join(', ')}</p>`
-            : ''
-        }
-        <p><strong>Total pagado:</strong> ${this.formatCurrency(payload.totalAmount, payload.currency)}</p>
-        <p><strong>Referencia de pago:</strong> ${payload.paymentId}</p>
-      `,
+      html: this.templatesService.render('10-compra-exitosa.html', {
+        origen: payload.origin,
+        destino: payload.destination,
+        empresa: payload.companyName ?? 'BusTix',
+        asiento: this.formatSeats(payload.seatNumbers),
+        hora: this.formatTime(payload.departureDate),
+        fecha: this.formatDateOnly(payload.departureDate),
+        codigo_reserva: payload.paymentId,
+        url_tiquete: this.frontendUrl,
+      }),
     });
   }
 
@@ -94,15 +106,16 @@ export class NotificationsService {
     email: string;
     name: string;
     companyName: string;
+    routeCount?: number;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Recibimos tu solicitud de empresa',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>Recibimos la solicitud para registrar la empresa <strong>${payload.companyName}</strong>.</p>
-        <p>La solicitud quedó en estado pendiente y será revisada por el equipo.</p>
-      `,
+      html: this.templatesService.render('02-solicitud-empresa.html', {
+        empresa: payload.companyName,
+        fecha_solicitud: this.formatDateOnly(new Date()),
+        numero_rutas: payload.routeCount ?? 0,
+      }),
     });
   }
 
@@ -113,24 +126,17 @@ export class NotificationsService {
     origin?: string;
     destination?: string;
     routeId?: string;
+    companyName?: string;
   }): Promise<void> {
-    const actionLabel =
-      payload.type === RouteRequestType.Add ? 'alta de ruta' : 'baja de ruta';
-
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Recibimos tu solicitud de ruta',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>Recibimos tu solicitud de <strong>${actionLabel}</strong>.</p>
-        ${
-          payload.origin && payload.destination
-            ? `<p><strong>Trayecto:</strong> ${payload.origin} - ${payload.destination}</p>`
-            : ''
-        }
-        ${payload.routeId ? `<p><strong>Ruta solicitada:</strong> ${payload.routeId}</p>` : ''}
-        <p>La solicitud será revisada por el equipo y te notificaremos si hay novedades.</p>
-      `,
+      html: this.templatesService.render('06-solicitud-ruta.html', {
+        origen: payload.origin ?? 'Por confirmar',
+        destino: payload.destination ?? 'Por confirmar',
+        empresa: payload.companyName ?? 'BusTix',
+        fecha_solicitud: this.formatDateOnly(new Date()),
+      }),
     });
   }
 
@@ -143,12 +149,12 @@ export class NotificationsService {
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Tu nueva ruta fue aprobada',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>La nueva ruta solicitada fue <strong>aprobada</strong>.</p>
-        <p><strong>Trayecto:</strong> ${payload.origin} - ${payload.destination}</p>
-        <p>Ya puedes solicitar horarios para esta ruta.</p>
-      `,
+      html: this.templatesService.render('07-ruta-aprobada.html', {
+        origen: payload.origin,
+        destino: payload.destination,
+        fecha_aprobacion: this.formatDateOnly(new Date()),
+        url_horarios: this.frontendUrl,
+      }),
     });
   }
 
@@ -162,12 +168,12 @@ export class NotificationsService {
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Recibimos tu solicitud de horario',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>Recibimos tu solicitud de un nuevo horario y quedó <strong>pendiente</strong>.</p>
-        <p><strong>Trayecto:</strong> ${payload.origin} - ${payload.destination}</p>
-        <p><strong>Salida:</strong> ${this.formatDate(payload.departureDate)}</p>
-      `,
+      html: this.templatesService.render('08-solicitud-horario.html', {
+        origen: payload.origin,
+        destino: payload.destination,
+        hora: this.formatTime(payload.departureDate),
+        fecha_solicitud: this.formatDateOnly(new Date()),
+      }),
     });
   }
 
@@ -177,17 +183,18 @@ export class NotificationsService {
     origin: string;
     destination: string;
     departureDate: Date;
+    totalSeats: number;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,
       subject: 'Tu nuevo horario fue aprobado',
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>El nuevo horario solicitado fue <strong>aprobado</strong>.</p>
-        <p><strong>Trayecto:</strong> ${payload.origin} - ${payload.destination}</p>
-        <p><strong>Salida:</strong> ${this.formatDate(payload.departureDate)}</p>
-        <p>El viaje ya está disponible para la compra de pasajes.</p>
-      `,
+      html: this.templatesService.render('09-horario-aprobado.html', {
+        origen: payload.origin,
+        destino: payload.destination,
+        hora: this.formatTime(payload.departureDate),
+        cupos: payload.totalSeats,
+        url_panel: this.frontendUrl,
+      }),
     });
   }
 
@@ -208,17 +215,19 @@ export class NotificationsService {
     await this.deliverEmail({
       to: payload.email,
       subject: `Recordatorio: tu viaje sale en menos de ${payload.hoursBefore} horas`,
-      html: `
-        <h2>Hola, ${payload.name}</h2>
-        <p>Te recordamos que tu viaje está próximo a salir.</p>
-        <p><strong>Ruta:</strong> ${payload.origin} - ${payload.destination}</p>
-        <p><strong>Salida:</strong> ${this.formatDate(payload.departureDate)}</p>
-        ${
-          payload.seatNumbers.length
-            ? `<p><strong>Asientos:</strong> ${payload.seatNumbers.join(', ')}</p>`
-            : ''
-        }
-      `,
+      html: this.templatesService.render(
+        payload.hoursBefore === 48
+          ? '11-recordatorio-48h.html'
+          : '12-recordatorio-24h.html',
+        {
+          origen: payload.origin,
+          destino: payload.destination,
+          fecha: this.formatDateOnly(payload.departureDate),
+          hora: this.formatTime(payload.departureDate),
+          asiento: this.formatSeats(payload.seatNumbers),
+          url_tiquete: this.frontendUrl,
+        },
+      ),
     });
   }
 
@@ -313,22 +322,35 @@ export class NotificationsService {
       .trim();
   }
 
-  private formatCurrency(amount: number, currency: string): string {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-      maximumFractionDigits: 0,
-    }).format(amount);
+  private get frontendUrl(): string {
+    return environment.FRONTEND_URL.replace(/\/$/, '');
   }
 
-  private formatDate(date?: Date | null): string {
+  private formatDateOnly(date?: Date | null): string {
     if (!date) {
       return 'Por confirmar';
     }
 
     return new Intl.DateTimeFormat('es-CO', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
+      dateStyle: 'long',
+      timeZone: 'America/Bogota',
     }).format(date);
+  }
+
+  private formatTime(date?: Date | null): string {
+    if (!date) {
+      return 'Por confirmar';
+    }
+
+    return new Intl.DateTimeFormat('es-CO', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/Bogota',
+    }).format(date);
+  }
+
+  private formatSeats(seatNumbers?: number[]): string {
+    return seatNumbers?.length ? seatNumbers.join(', ') : 'Por confirmar';
   }
 }

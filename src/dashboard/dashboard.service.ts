@@ -338,6 +338,7 @@ export class DashboardService {
         origin: savedRequest.route.origin,
         destination: savedRequest.route.destination,
         departureDate: savedRequest.departureDate,
+        totalSeats: savedRequest.totalSeats,
       });
     }
 
@@ -348,12 +349,13 @@ export class DashboardService {
     userId: string,
     role: Role,
   ): Promise<DashboardUserResponseDto> {
-    // Cambia el rol de un usuario existente
+    const currentUser = await this.usersRepository.getUserById(userId);
     const updatedUser = await this.usersRepository.updateUser(userId, { role });
     await this.notificationsService.sendRoleChangedEmail({
       email: updatedUser.email,
       name: updatedUser.name,
       role: updatedUser.role,
+      previousRole: currentUser.role,
     });
     return this.toUserResponse(updatedUser);
   }
@@ -389,6 +391,7 @@ export class DashboardService {
         'El administrador no tiene una empresa asociada',
       );
     }
+    const company = await this.companiesService.findOne(user.companyId);
 
     const routeRequest = this.routeRequestRepo.create({
       type: requestData.type,
@@ -411,6 +414,7 @@ export class DashboardService {
       origin: savedRouteRequest.origin,
       destination: savedRouteRequest.destination,
       routeId: savedRouteRequest.routeId,
+      companyName: company.name,
     });
     return this.toRouteRequestResponse(savedRouteRequest);
   }
