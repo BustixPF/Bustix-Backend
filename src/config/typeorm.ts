@@ -17,8 +17,7 @@ const config: DataSourceOptions = {
   entities: ['dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
   logging: false,
-  // This demo currently relies on schema sync instead of migrations.
-  synchronize: true,
+  synchronize: false,
   dropSchema: false,
 };
 

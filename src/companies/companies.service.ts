@@ -67,12 +67,16 @@ export class CompaniesService {
     return this.companiesRepo.updateCompany(id, data);
   }
 
-  // ✅ Método para aprobar/rechazar empresa
+  // ✅ Método para aprobar/rechazar empresa con validación y envío de notificación
   async updateCompanyStatus(
     id: string,
     status: CompanyStatus,
     rejectionReason?: string,
   ): Promise<Company> {
+    if (status !== CompanyStatus.APPROVED && status !== CompanyStatus.REJECTED) {
+      throw new BadRequestException('El estado debe ser APPROVED o REJECTED');
+    }
+
     const company = await this.companiesRepo.updateCompanyStatus(
       id,
       status,
@@ -87,5 +91,10 @@ export class CompaniesService {
     });
 
     return company;
+  }
+
+  // ✅ Obtener todas las empresas con estado PENDING
+  async findPendingCompanies(): Promise<Company[]> {
+    return this.companiesRepo.findPendingCompanies();
   }
 }

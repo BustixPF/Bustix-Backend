@@ -13,6 +13,7 @@ import { TripsModule } from './trips/trips.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { RoutesModule } from './routes/routes.module';
 import { SeederModule } from './seeder/seeder.module';
+import { MetricsModule } from './metrics/metric.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChatbotModule } from './chatbot/chatbot.module';
 
@@ -40,6 +41,7 @@ import { ChatbotModule } from './chatbot/chatbot.module';
     RoutesModule,
     SeederModule,
     ChatbotModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
