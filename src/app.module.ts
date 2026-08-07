@@ -14,6 +14,7 @@ import { TicketsModule } from './tickets/tickets.module';
 import { RoutesModule } from './routes/routes.module';
 import { SeederModule } from './seeder/seeder.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     TicketsModule,
     RoutesModule,
     SeederModule,
+    ChatbotModule,
   ],
   controllers: [AppController],
   providers: [AppService],
