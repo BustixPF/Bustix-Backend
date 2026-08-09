@@ -59,7 +59,10 @@ export class TripsService {
   }
 
   async findOne(id: string) {
-    const trip = await this.tripsRepository.findOne({ where: { id } });
+    const trip = await this.tripsRepository.findOne({
+      where: { id },
+      relations: { company: true },
+    });
     if (!trip)
       throw new NotFoundException(`No se encontró el viaje con id ${id}`);
     return trip;
