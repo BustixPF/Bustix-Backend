@@ -16,22 +16,33 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../common/roles.enum';
 
+// Importamos los decoradores de documentación
+import {
+  FindAllRoutesDoc,
+  FindRouteByIdDoc,
+  CreateRouteDoc,
+  UpdateRouteDoc,
+  DeleteRouteDoc,
+} from './routes.decorator';
+
 @Controller('routes')
 export class RoutesController {
   constructor(private readonly routesService: RoutesService) {}
 
-  // ✅ Listar todas las rutas
   @Get()
+  @FindAllRoutesDoc()
   async findAll(): Promise<Route[]> {
     return this.routesService.findAll();
   }
 
   @Get(':id')
+  @FindRouteByIdDoc()
   async findById(@Param('id') id: number): Promise<Route | null> {
     return this.routesService.findById(id);
   }
 
   @Post()
+  @CreateRouteDoc()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
@@ -40,6 +51,7 @@ export class RoutesController {
   }
 
   @Put(':id')
+  @UpdateRouteDoc()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
@@ -51,6 +63,7 @@ export class RoutesController {
   }
 
   @Delete(':id')
+  @DeleteRouteDoc()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)

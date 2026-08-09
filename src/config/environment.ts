@@ -32,4 +32,6 @@ export const environment = {
   BREVO_API_KEY: process.env.BREVO_API_KEY || '',
   BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || '',
   BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME || 'BusTix',
+
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
 };

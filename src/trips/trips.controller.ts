@@ -42,4 +42,9 @@ export class TripsController {
   findAvailableSeats(@Param('id', ParseUUIDPipe) id: string) {
     return this.tripsService.findAvailableSeats(id);
   }
+
+  @Get('upcoming')
+  getUpcomingTrips() {
+    return this.tripsService.getUpcomingTrips();
+  }
 }

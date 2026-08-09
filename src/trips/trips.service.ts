@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { Trip } from './entities/trip.entity';
 import { Seat, SeatStatus } from './entities/seat.entity';
 import { Route } from '../routes/entities/routes.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
+import { TripStatus } from '../common/trip-status.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class TripsService {
@@ -37,6 +39,7 @@ export class TripsService {
       price: dto.price,
       totalSeats: dto.totalSeats,
       route,
+      status: TripStatus.ON_TIME, // 👈 estado inicial
     });
     const savedTrip = await this.tripsRepository.save(trip);
 
@@ -56,7 +59,10 @@ export class TripsService {
   }
 
   async findOne(id: string) {
-    const trip = await this.tripsRepository.findOne({ where: { id } });
+    const trip = await this.tripsRepository.findOne({
+      where: { id },
+      relations: { company: true },
+    });
     if (!trip)
       throw new NotFoundException(`No se encontró el viaje con id ${id}`);
     return trip;
@@ -104,5 +110,34 @@ export class TripsService {
       { id: seatId, status: SeatStatus.Reserved },
       { status: SeatStatus.Available },
     );
+  }
+
+  // 👇 Cron job que corre cada minuto y actualiza estados
+  @Cron(CronExpression.EVERY_MINUTE)
+  async updateTripsStatus() {
+    const trips = await this.tripsRepository.find();
+    const now = new Date();
+
+    for (const trip of trips) {
+      if (trip.status === TripStatus.CANCELLED) continue;
+
+      if (now >= trip.departureDate) {
+        trip.status = TripStatus.DEPARTED;
+      } else if (now >= new Date(trip.departureDate.getTime() - 30 * 60000)) {
+        trip.status = TripStatus.BOARDING;
+      } else {
+        trip.status = TripStatus.ON_TIME;
+      }
+
+      await this.tripsRepository.save(trip);
+    }
+  }
+
+  async getUpcomingTrips() {
+    const now = new Date();
+    return this.tripsRepository.find({
+      where: { departureDate: MoreThan(now) },
+      order: { departureDate: 'ASC' },
+    });
   }
 }

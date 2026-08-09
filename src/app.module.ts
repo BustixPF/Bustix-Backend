@@ -13,15 +13,22 @@ import { TripsModule } from './trips/trips.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { RoutesModule } from './routes/routes.module';
 import { SeederModule } from './seeder/seeder.module';
+import { MetricsModule } from './metrics/metric.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
+    // Configuración global de variables de entorno
     ConfigModule.forRoot({
       isGlobal: true,
       load: [typeOrmConfig],
     }),
+
+    // 👇 Habilita cron jobs y tareas programadas
     ScheduleModule.forRoot(),
+
+    // Configuración de TypeORM con variables de entorno
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -29,6 +36,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         return configService.get<TypeOrmModuleOptions>('typeorm')!;
       },
     }),
+
+    // Módulos de la aplicación
     AuthModule,
     CompaniesModule,
     FileUploadModule,
@@ -38,6 +47,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     TicketsModule,
     RoutesModule,
     SeederModule,
+    ChatbotModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
