@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -74,5 +75,21 @@ export class UsersController {
       throw new ForbiddenException('No podés editar los datos de otro usuario');
     }
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const isSelf = req.user?.id === id;
+    const isAdmin = req.user?.role === Role.Admin;
+
+    if (!isSelf && !isAdmin) {
+      throw new ForbiddenException('No podés eliminar otro usuario');
+    }
+    return this.usersService.remove(id);
   }
 }

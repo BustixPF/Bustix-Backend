@@ -19,11 +19,16 @@ import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
+    // Configuración global de variables de entorno
     ConfigModule.forRoot({
       isGlobal: true,
       load: [typeOrmConfig],
     }),
+
+    // 👇 Habilita cron jobs y tareas programadas
     ScheduleModule.forRoot(),
+
+    // Configuración de TypeORM con variables de entorno
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,6 +36,8 @@ import { ChatbotModule } from './chatbot/chatbot.module';
         return configService.get<TypeOrmModuleOptions>('typeorm')!;
       },
     }),
+
+    // Módulos de la aplicación
     AuthModule,
     CompaniesModule,
     FileUploadModule,

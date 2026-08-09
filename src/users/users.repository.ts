@@ -116,4 +116,17 @@ export class UsersRepository {
 
     return await this.usersOrmRepository.save(newUser);
   }
+
+  async deleteUser(id: string): Promise<Omit<User, 'password'>> {
+    const foundUser = await this.usersOrmRepository.findOneBy({ id });
+    if (!foundUser) {
+      throw new NotFoundException(`No existe usuario con id ${id}`);
+    }
+
+    await this.usersOrmRepository.remove(foundUser);
+
+    const { password, ...userNoPassword } = foundUser;
+    void password;
+    return userNoPassword;
+  }
 }
