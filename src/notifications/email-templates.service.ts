@@ -44,7 +44,7 @@ export class EmailTemplatesService {
     if (cached) return cached;
 
     const template = readFileSync(
-      join(__dirname, '..', 'templates', templateName),
+      join(__dirname, '..', '..', 'notifications', 'templates', templateName),
       'utf8',
     );
     this.templates.set(templateName, template);
