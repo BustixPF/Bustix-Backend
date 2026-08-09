@@ -9,6 +9,7 @@ import {
 import { Company } from '../../companies/entities/company.entity';
 import { Seat } from './seat.entity';
 import { Route } from '../../routes/entities/routes.entity';
+import { TripStatus } from '../../common/trip-status.enum';
 
 @Entity({ name: 'trips' })
 export class Trip {
@@ -63,4 +64,15 @@ export class Trip {
   })
   @JoinColumn({ name: 'routeId' })
   route: Route;
+
+  /**
+   * Estado actual del viaje
+   * @example 'A_TIEMPO'
+   */
+  @Column({
+    type: 'enum',
+    enum: TripStatus,
+    default: TripStatus.ON_TIME,
+  })
+  status: TripStatus;
 }

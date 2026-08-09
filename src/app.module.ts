@@ -17,11 +17,16 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    // Configuración global de variables de entorno
     ConfigModule.forRoot({
       isGlobal: true,
       load: [typeOrmConfig],
     }),
+
+    // 👇 Habilita cron jobs y tareas programadas
     ScheduleModule.forRoot(),
+
+    // Configuración de TypeORM con variables de entorno
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -29,6 +34,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         return configService.get<TypeOrmModuleOptions>('typeorm')!;
       },
     }),
+
+    // Módulos de la aplicación
     AuthModule,
     CompaniesModule,
     FileUploadModule,
