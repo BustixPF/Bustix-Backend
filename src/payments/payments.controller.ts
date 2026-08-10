@@ -9,7 +9,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -25,6 +30,9 @@ export class PaymentsController {
 
   @Post('checkout-session')
   @ApiBearerAuth()
+  @ApiUnauthorizedResponse({
+    description: 'Debes registrarte o iniciar sesión para comprar pasajes',
+  })
   @UseGuards(JwtAuthGuard)
   createCheckoutSession(
     @Body() dto: CreateCheckoutSessionDto,

@@ -21,11 +21,11 @@ export function createCompaniesDecorator() {
 
 export function findAllCompaniesDecorator() {
   return applyDecorators(
-    ApiOperation({ summary: 'Listar todas las empresas' }),
+    ApiOperation({ summary: 'Listar empresas aprobadas' }),
     HttpCode(200),
     ApiResponse({
       status: 200,
-      description: 'Listado de empresas',
+      description: 'Listado público de empresas aprobadas',
       type: [Company],
     }),
   );

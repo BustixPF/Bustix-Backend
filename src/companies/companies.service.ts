@@ -52,6 +52,10 @@ export class CompaniesService {
     return this.companiesRepo.findAll();
   }
 
+  async findPublicCompanies(): Promise<Company[]> {
+    return this.companiesRepo.findApproved();
+  }
+
   async findOne(id: string): Promise<Company> {
     const company = await this.companiesRepo.findOne(id);
     if (!company) {
@@ -73,7 +77,10 @@ export class CompaniesService {
     status: CompanyStatus,
     rejectionReason?: string,
   ): Promise<Company> {
-    if (status !== CompanyStatus.APPROVED && status !== CompanyStatus.REJECTED) {
+    if (
+      status !== CompanyStatus.APPROVED &&
+      status !== CompanyStatus.REJECTED
+    ) {
       throw new BadRequestException('El estado debe ser APPROVED o REJECTED');
     }
 

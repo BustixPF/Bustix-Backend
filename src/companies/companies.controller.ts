@@ -48,12 +48,10 @@ export class CompaniesController {
   }
 
   @Get()
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superAdmin)
   @findAllCompaniesDecorator()
   async findAll(): Promise<Company[]> {
-    return this.companiesService.findAll();
+    const companies = await this.companiesService.findPublicCompanies();
+    return companies.map((company) => this.withoutPassword(company));
   }
 
   // 1. RUTAS ESTÁTICAS PRIMERO

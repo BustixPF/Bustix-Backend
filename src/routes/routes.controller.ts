@@ -25,8 +25,6 @@ import {
   DeleteRouteDoc,
 } from './routes.decorator';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('routes')
 export class RoutesController {
   constructor(private readonly routesService: RoutesService) {}
@@ -44,6 +42,7 @@ export class RoutesController {
   }
 
   @Post()
+  @ApiBearerAuth()
   @CreateRouteDoc()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
@@ -52,6 +51,7 @@ export class RoutesController {
   }
 
   @Put(':id')
+  @ApiBearerAuth()
   @UpdateRouteDoc()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
@@ -63,6 +63,7 @@ export class RoutesController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
   @DeleteRouteDoc()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)

@@ -16,13 +16,12 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../common/roles.enum';
 
 @ApiTags('trips')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('trips')
 export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
 
   @Post()
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   create(@Body() dto: CreateTripDto) {

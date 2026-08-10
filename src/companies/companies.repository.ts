@@ -70,6 +70,13 @@ export class CompaniesRepository {
     return this.companyRepo.find({ relations: { documents: true } });
   }
 
+  async findApproved(): Promise<Company[]> {
+    return this.companyRepo.find({
+      where: { status: CompanyStatus.APPROVED },
+      order: { name: 'ASC' },
+    });
+  }
+
   // Buscar empresa por ID
   async findOne(id: string): Promise<Company | null> {
     return this.companyRepo.findOne({
