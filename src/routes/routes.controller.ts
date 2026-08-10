@@ -25,6 +25,8 @@ import {
   DeleteRouteDoc,
 } from './routes.decorator';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('routes')
 export class RoutesController {
   constructor(private readonly routesService: RoutesService) {}
@@ -43,7 +45,6 @@ export class RoutesController {
 
   @Post()
   @CreateRouteDoc()
-  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   async create(@Body() routeData: Partial<Route>): Promise<Route> {
@@ -52,7 +53,6 @@ export class RoutesController {
 
   @Put(':id')
   @UpdateRouteDoc()
-  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   async update(
@@ -64,7 +64,6 @@ export class RoutesController {
 
   @Delete(':id')
   @DeleteRouteDoc()
-  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   async delete(@Param('id') id: number): Promise<void> {

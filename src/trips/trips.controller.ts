@@ -16,12 +16,13 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../common/roles.enum';
 
 @ApiTags('trips')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('trips')
 export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
 
   @Post()
-  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   create(@Body() dto: CreateTripDto) {
@@ -33,9 +34,9 @@ export class TripsController {
     return this.tripsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.tripsService.findOne(id);
+  @Get('upcoming')
+  getUpcomingTrips() {
+    return this.tripsService.getUpcomingTrips();
   }
 
   @Get(':id/seats')
@@ -43,8 +44,8 @@ export class TripsController {
     return this.tripsService.findAvailableSeats(id);
   }
 
-  @Get('upcoming')
-  getUpcomingTrips() {
-    return this.tripsService.getUpcomingTrips();
+  @Get(':id')
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.tripsService.findOne(id);
   }
 }

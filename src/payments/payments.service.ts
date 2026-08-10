@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,6 +13,9 @@ import { environment } from '../config/environment';
 import { TripsService } from '../trips/trips.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AuthenticatedUser } from '../auth/interfaces/authenticated-request.interface';
+import { Role } from '../common/roles.enum';
+import { UsersRepository } from '../users/users.repository';
 
 @Injectable()
 export class PaymentsService {
@@ -23,6 +27,7 @@ export class PaymentsService {
     private readonly tripsService: TripsService,
     private readonly ticketsService: TicketsService,
     private readonly notificationsService: NotificationsService,
+    private readonly usersRepository: UsersRepository,
   ) {
     if (!environment.STRIPE_SECRET_KEY) {
       throw new Error('Falta configurar STRIPE_SECRET_KEY en el .env');
@@ -212,7 +217,13 @@ export class PaymentsService {
     return payment;
   }
 
-  async refundPayment(paymentId: string) {
+  async findOneForRequester(id: string, requester: AuthenticatedUser) {
+    const payment = await this.findOne(id);
+    await this.assertPaymentAccess(payment, requester);
+    return payment;
+  }
+
+  async refundPayment(paymentId: string, requester: AuthenticatedUser) {
     const payment = await this.paymentsRepository.findOne({
       where: { id: paymentId },
       relations: { user: true },
@@ -221,6 +232,8 @@ export class PaymentsService {
     if (!payment) {
       throw new NotFoundException('Pago no encontrado');
     }
+
+    await this.assertPaymentAccess(payment, requester, true);
 
     if (payment.status !== PaymentStatus.Paid) {
       throw new BadRequestException(
@@ -256,5 +269,28 @@ export class PaymentsService {
     }
 
     return { message: 'Pago reembolsado correctamente', paymentId: payment.id };
+  }
+
+  private async assertPaymentAccess(
+    payment: Payment,
+    requester: AuthenticatedUser,
+    requireManagement = false,
+  ): Promise<void> {
+    if (requester.role === Role.superAdmin) return;
+
+    if (!requireManagement && requester.role === Role.User) {
+      if (payment.userId === requester.id) return;
+      throw new ForbiddenException(
+        'No podés consultar un pago de otro usuario',
+      );
+    }
+
+    if (requester.role === Role.Admin && payment.tripId) {
+      const admin = await this.usersRepository.getUserById(requester.id);
+      const trip = await this.tripsService.findOne(payment.tripId);
+      if (admin.companyId && trip.companyId === admin.companyId) return;
+    }
+
+    throw new ForbiddenException('No tenés acceso a este pago');
   }
 }

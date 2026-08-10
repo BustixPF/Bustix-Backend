@@ -6,6 +6,16 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
+  if (
+    (environment.NODE_ENV === 'production' ||
+      environment.NODE_ENV === 'produccion') &&
+    environment.JWT_SECRET.length < 32
+  ) {
+    throw new Error(
+      'JWT_SECRET debe tener al menos 32 caracteres en producción',
+    );
+  }
+
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.useGlobalPipes(
@@ -18,18 +28,26 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  // Configuración flexible de CORS
+  const configuredFrontend = environment.FRONTEND_URL.replace(/\/$/, '');
   app.enableCors({
-    origin: (origin, callback) => {
-      // Permite peticiones sin origin (como Postman/Swagger) o dominios de Vercel y Localhost
+    origin: (
+      origin: string | undefined,
+      callback: (error: Error | null, allow?: boolean) => void,
+    ) => {
+      const normalizedOrigin = origin?.replace(/\/$/, '');
+      const isLocalDevelopment =
+        environment.NODE_ENV !== 'production' &&
+        normalizedOrigin != null &&
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin);
+
       if (
         !origin ||
-        origin.includes('vercel.app') ||
-        origin.includes('localhost')
+        normalizedOrigin === configuredFrontend ||
+        isLocalDevelopment
       ) {
         callback(null, true);
       } else {
-        callback(null, true); // O cambiar por new Error('Not allowed by CORS') si querés restricción estricta
+        callback(new Error('Origin no permitido por CORS'), false);
       }
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

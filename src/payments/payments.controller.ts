@@ -36,8 +36,8 @@ export class PaymentsController {
   @Get(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.paymentsService.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.paymentsService.findOneForRequester(id, req.user!);
   }
 
   @Post(':id/refund')
@@ -45,8 +45,8 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin, Role.Admin) // Roles permitidos
   @ApiOperation({ summary: 'Reembolsar o anular un pago (SuperAdmin)' })
-  refundPayment(@Param('id') id: string) {
-    return this.paymentsService.refundPayment(id);
+  refundPayment(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.paymentsService.refundPayment(id, req.user!);
   }
 
   @Post('webhook')

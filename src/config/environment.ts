@@ -17,7 +17,7 @@ export const environment = {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
 
-  JWT_SECRET: process.env.JWT_SECRET || 'secret',
+  JWT_SECRET: process.env.JWT_SECRET || 'development-only-jwt-secret',
 
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',

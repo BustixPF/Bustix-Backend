@@ -26,7 +26,7 @@ export class UserController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   // Historial de pasajes comprados por el usuario
-  @Roles(Role.User)
+  @Roles(Role.User, Role.Admin, Role.superAdmin)
   @Get('tickets')
   @ApiOperation({ summary: 'Obtiene los tickets del usuario autenticado' })
   @ApiOkResponse({ type: TicketResponseDto, isArray: true })
@@ -39,7 +39,7 @@ export class UserController {
   }
 
   // Obtener datos del perfil del usuario
-  @Roles(Role.User)
+  @Roles(Role.User, Role.Admin, Role.superAdmin)
   @Get('profile')
   @ApiOperation({ summary: 'Obtiene el perfil del usuario autenticado' })
   @ApiOkResponse({ type: DashboardUserResponseDto })
@@ -52,7 +52,7 @@ export class UserController {
   }
 
   // Actualizar datos del perfil del usuario
-  @Roles(Role.User)
+  @Roles(Role.User, Role.Admin, Role.superAdmin)
   @Put('profile')
   @ApiOperation({ summary: 'Actualiza el perfil del usuario autenticado' })
   @ApiOkResponse({ type: DashboardUserResponseDto })

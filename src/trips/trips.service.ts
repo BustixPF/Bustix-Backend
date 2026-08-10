@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -28,6 +29,11 @@ export class TripsService {
     if (!route) {
       throw new NotFoundException(
         `No se encontró la ruta con id ${dto.routeId}`,
+      );
+    }
+    if (route.companyId !== dto.companyId) {
+      throw new BadRequestException(
+        'La ruta no pertenece a la empresa indicada',
       );
     }
 

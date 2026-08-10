@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -7,8 +8,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  create(createUserDto: CreateUserDto) {
-    return this.usersRepository.addUser(createUserDto);
+  async create(createUserDto: CreateUserDto) {
+    if (createUserDto.password !== createUserDto.confirmPassword) {
+      throw new BadRequestException('Las contraseñas no coinciden');
+    }
+    return this.usersRepository.addUser({
+      ...createUserDto,
+      email: createUserDto.email.trim().toLowerCase(),
+      password: await bcrypt.hash(createUserDto.password, 10),
+    });
   }
 
   findAll(page: number, limit: number) {

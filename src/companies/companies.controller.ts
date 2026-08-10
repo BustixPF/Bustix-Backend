@@ -6,6 +6,8 @@ import {
   Param,
   Patch,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { Company } from './entities/company.entity';
@@ -29,6 +31,7 @@ import { Role } from '../common/roles.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { UpdateCompanyStatusDto } from './dto/update-company.dto';
+import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 
 @ApiTags('companies')
 @Controller('companies')
@@ -39,10 +42,15 @@ export class CompaniesController {
   @createCompaniesDecorator()
   @ApiBody({ type: CreateCompanyDto })
   async create(@Body() body: CreateCompanyDto): Promise<Company> {
-    return this.companiesService.createCompany(body);
+    return this.withoutPassword(
+      await this.companiesService.createCompany(body),
+    );
   }
 
   @Get()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
   @findAllCompaniesDecorator()
   async findAll(): Promise<Company[]> {
     return this.companiesService.findAll();
@@ -52,8 +60,11 @@ export class CompaniesController {
   @Get('pending')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superAdmin, Role.Admin)
-  @ApiOperation({ summary: 'Obtener empresas con solicitudes pendientes de aprobación (SuperAdmin)' })
+  @Roles(Role.superAdmin)
+  @ApiOperation({
+    summary:
+      'Obtener empresas con solicitudes pendientes de aprobación (SuperAdmin)',
+  })
   getPendingCompanies() {
     return this.companiesService.findPendingCompanies();
   }
@@ -62,12 +73,11 @@ export class CompaniesController {
   @Patch(':id/status')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superAdmin, Role.Admin)
-  @ApiOperation({ summary: 'Aprobar o rechazar la solicitud de una empresa (SuperAdmin)' })
-  updateStatus(
-    @Param('id') id: string,
-    @Body() dto: UpdateCompanyStatusDto,
-  ) {
+  @Roles(Role.superAdmin)
+  @ApiOperation({
+    summary: 'Aprobar o rechazar la solicitud de una empresa (SuperAdmin)',
+  })
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateCompanyStatusDto) {
     return this.companiesService.updateCompanyStatus(id, dto.status);
   }
 
@@ -88,10 +98,7 @@ export class CompaniesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   @rejectCompanyDecorator()
-  async reject(
-    @Param('id') id: string,
-    @Body() body: RejectCompanyDto,
-  ) {
+  async reject(@Param('id') id: string, @Body() body: RejectCompanyDto) {
     return this.companiesService.updateCompanyStatus(
       id,
       CompanyStatus.REJECTED,
@@ -101,17 +108,44 @@ export class CompaniesController {
 
   // 3. RUTAS PARAMETRIZADAS GENERALES
   @Get(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin, Role.Admin)
   @findCompaniesByIdDecorator()
-  async findOne(@Param('id') id: string): Promise<Company> {
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<Company> {
+    this.assertCompanyAccess(req, id);
     return this.companiesService.findOne(id);
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin, Role.Admin)
   @updateCompanyDecorator()
   async update(
     @Param('id') id: string,
     @Body() body: UpdateCompanyDto,
+    @Req() req: AuthenticatedRequest,
   ): Promise<Company> {
+    this.assertCompanyAccess(req, id);
     return this.companiesService.updateCompany(id, body);
+  }
+
+  private assertCompanyAccess(req: AuthenticatedRequest, companyId: string) {
+    if (
+      req.user?.role !== Role.superAdmin &&
+      req.user?.companyId !== companyId
+    ) {
+      throw new ForbiddenException('No podés acceder a otra empresa');
+    }
+  }
+
+  private withoutPassword(company: Company): Company {
+    const { password, ...safeCompany } = company;
+    void password;
+    return safeCompany as Company;
   }
 }

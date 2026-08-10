@@ -48,7 +48,12 @@ export class AuthService {
       });
     }
 
-    const payload = { id: user.id, email: user.email, role: user.role };
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      companyId: user.companyId ?? null,
+    };
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -114,12 +119,23 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException(
+        'Esta cuenta debe iniciar sesión con Google',
+      );
+    }
+
     const isPasswordValid = await bcrypt.compare(pass, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const payload = { id: user.id, email: user.email, role: user.role };
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      companyId: user.companyId ?? null,
+    };
     const token = await this.jwtService.signAsync(payload);
 
     return {

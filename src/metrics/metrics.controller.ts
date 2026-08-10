@@ -10,13 +10,16 @@ import { GetMetricsDto } from './dto/metric-dto';
 @ApiTags('admin-metrics')
 @Controller('admin/metrics')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.superAdmin, Role.Admin)
+@Roles(Role.superAdmin)
 @ApiBearerAuth()
 export class MetricsController {
   constructor(private readonly metricsService: MetricsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Obtener métricas y reportes globales de la plataforma (SuperAdmin)' })
+  @ApiOperation({
+    summary:
+      'Obtener métricas y reportes globales de la plataforma (SuperAdmin)',
+  })
   getMetrics(@Query() dto: GetMetricsDto) {
     return this.metricsService.getGlobalMetrics(dto);
   }

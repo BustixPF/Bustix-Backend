@@ -32,6 +32,7 @@ import { SaleResponseDto } from './dto/sale-response.dto';
 import { SalesQueryDto } from './dto/sales-query.dto';
 import { CreateScheduleRequestDto } from './dto/schedule-request.dto';
 import { ScheduleRequestResponseDto } from './dto/schedule-request-response.dto';
+import { DashboardUserResponseDto } from './dto/dashboard-user-response.dto';
 
 // Controlador para endpoints del Admin (dueño de empresa)
 @ApiTags('Dashboard Admin')
@@ -99,8 +100,21 @@ export class AdminController {
   @ApiUnauthorizedResponse({ description: 'Token no proporcionado o invalido' })
   @ApiForbiddenResponse({ description: 'Rol insuficiente' })
   async getSalesHistory(
+    @Req() request: AuthenticatedRequest,
     @Query() query: SalesQueryDto,
   ): Promise<SaleResponseDto[]> {
-    return this.dashboardService.getSales(query);
+    return this.dashboardService.getCompanySales(request.user!.id, query);
+  }
+
+  @Roles(Role.Admin)
+  @Get('customers')
+  @ApiOperation({
+    summary: 'Lista usuarios que compraron tickets de la empresa autenticada',
+  })
+  @ApiOkResponse({ type: DashboardUserResponseDto, isArray: true })
+  getCustomers(
+    @Req() request: AuthenticatedRequest,
+  ): Promise<DashboardUserResponseDto[]> {
+    return this.dashboardService.getCompanyCustomers(request.user!.id);
   }
 }
