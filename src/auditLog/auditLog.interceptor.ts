@@ -13,8 +13,6 @@ import { Repository } from 'typeorm';
 import { AUDIT_ACTION_KEY } from './auditLog.decorator';
 import { AuditLog } from './entity/auditLog.entity';
 
-
-
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
   constructor(
@@ -24,7 +22,10 @@ export class AuditInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const action = this.reflector.get<string>(AUDIT_ACTION_KEY, context.getHandler());
+    const action = this.reflector.get<string>(
+      AUDIT_ACTION_KEY,
+      context.getHandler(),
+    );
 
     // Si el endpoint no tiene el decorador @AuditAction, continua sin registrar
     if (!action) {

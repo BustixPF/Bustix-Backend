@@ -5,7 +5,6 @@ import { AuditService } from './auditLog.service';
 import { AuditInterceptor } from './auditLog.interceptor';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-
 @Module({
   imports: [TypeOrmModule.forFeature([AuditLog])],
   controllers: [AuditController],

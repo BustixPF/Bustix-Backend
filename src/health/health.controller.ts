@@ -28,7 +28,9 @@ export class HealthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
-  @ApiOperation({ summary: 'Obtener el estado de salud del sistema (SuperAdmin)' })
+  @ApiOperation({
+    summary: 'Obtener el estado de salud del sistema (SuperAdmin)',
+  })
   @HealthCheck()
   check() {
     return this.health.check([

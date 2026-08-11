@@ -16,7 +16,10 @@ export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Consultar logs de auditoría de acciones administrativas (SuperAdmin)' })
+  @ApiOperation({
+    summary:
+      'Consultar logs de auditoría de acciones administrativas (SuperAdmin)',
+  })
   getAuditLogs() {
     return this.auditService.findAll();
   }

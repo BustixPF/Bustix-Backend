@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
+import {
+  HealthCheckError,
+  HealthIndicator,
+  HealthIndicatorResult,
+} from '@nestjs/terminus';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 
@@ -26,7 +30,9 @@ export class StripeHealthIndicator extends HealthIndicator {
       // Consulta liviana a la API de Stripe usando tus credenciales
       await this.stripe.balance.retrieve();
 
-      return this.getStatus(key, true, { message: 'Conexión con Stripe activa' });
+      return this.getStatus(key, true, {
+        message: 'Conexión con Stripe activa',
+      });
     } catch (error: any) {
       throw new HealthCheckError(
         'Fallo en verificación de Stripe',

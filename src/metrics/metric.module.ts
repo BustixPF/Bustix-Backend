@@ -9,9 +9,7 @@ import { Ticket } from '../tickets/entities/ticket.entity';
 import { MetricsService } from './metric.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Payment, User, Company, Ticket]),
-  ],
+  imports: [TypeOrmModule.forFeature([Payment, User, Company, Ticket])],
   controllers: [MetricsController],
   providers: [MetricsService],
 })

@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment, PaymentStatus } from '../payments/entities/payment.entity';
 import { User } from '../users/entities/user.entity';
-import { Company } from '../companies/entities/company.entity'; // O ajusta la ruta a tu entidad
-import { Ticket } from '../tickets/entities/ticket.entity';     // O ajusta la ruta a tu entidad
+import { Company } from '../companies/entities/company.entity';
+import { Ticket } from '../tickets/entities/ticket.entity';
 import { GetMetricsDto } from './dto/metric-dto';
 import { CompanyStatus } from '../common/company-status.enum';
 
@@ -32,18 +32,21 @@ export class MetricsService {
       .where('payment.status = :status', { status: PaymentStatus.Paid });
 
     if (startDate && endDate) {
-      incomeQuery.andWhere('payment.createdAt BETWEEN :startDate AND :endDate', {
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-      });
+      incomeQuery.andWhere(
+        'payment.createdAt BETWEEN :startDate AND :endDate',
+        {
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+        },
+      );
     }
 
     const incomeResult = await incomeQuery.getRawOne();
 
     // 2. Conteo de Empresas Activas
-   const activeCompanies = await this.companiesRepository.count({
-  where: { status: CompanyStatus.APPROVED },
-});
+    const activeCompanies = await this.companiesRepository.count({
+      where: { status: CompanyStatus.APPROVED },
+    });
 
     // 3. Conteo de Usuarios Registrados
     const totalUsers = await this.usersRepository.count();
