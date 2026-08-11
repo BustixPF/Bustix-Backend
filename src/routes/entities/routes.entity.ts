@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Company } from '../../companies/entities/company.entity';
 import { Trip } from '../../trips/entities/trip.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('routes')
 export class Route {
@@ -36,5 +37,6 @@ export class Route {
   company: Company;
 
   @OneToMany(() => Trip, (trip) => trip.route)
+  @Exclude() // 👈 AGREGAR ESTO PARA EVITAR EL BUCLE RECURSIVO A TRIPS
   trips: Trip[];
 }

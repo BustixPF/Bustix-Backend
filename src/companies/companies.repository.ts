@@ -65,6 +65,11 @@ export class CompaniesRepository {
     return updated;
   }
 
+ async updateIsActive(company: Company, isActive: boolean): Promise<Company> {
+  company.isActive = isActive;
+  return await this.companyRepo.save(company);
+}
+
   // Listar todas las empresas
   async findAll(): Promise<Company[]> {
     return this.companyRepo.find({ relations: { documents: true } });

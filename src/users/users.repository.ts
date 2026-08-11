@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '../common/roles.enum';
 
 @Injectable()
 export class UsersRepository {
@@ -133,7 +134,6 @@ export class UsersRepository {
 
     return await this.usersOrmRepository.save(newUser);
   }
-
   async deleteUser(id: string): Promise<Omit<User, 'password'>> {
     const foundUser = await this.usersOrmRepository.findOneBy({ id });
     if (!foundUser) {
@@ -146,4 +146,41 @@ export class UsersRepository {
     void password;
     return userNoPassword;
   }
+
+  async findOne(id: string): Promise<User | null> {
+    return this.usersOrmRepository.findOne({ where: { id } });
+  }
+
+  async updateUserRole(id: string, role: Role): Promise<Omit<User, 'password'>> {
+    const user = await this.usersOrmRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException(`No existe usuario con id ${id}`);
+    }
+
+    user.role = role;
+    const savedUser = await this.usersOrmRepository.save(user);
+
+    const { password, ...userNoPassword } = savedUser;
+    void password;
+    return userNoPassword;
+  }
+
+ async updateUserActive(
+    id: string,
+    isActive: boolean,
+  ): Promise<Omit<User, 'password'>> {
+    const user = await this.usersOrmRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException(`No existe usuario con id ${id}`);
+    }
+
+    user.isActive = isActive;
+    const savedUser = await this.usersOrmRepository.save(user);
+
+    const { password, ...userNoPassword } = savedUser;
+    void password;
+    return userNoPassword;
+  }
+
+ 
 }

@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import Stripe from 'stripe';
 import { Payment, PaymentStatus } from './entities/payment.entity';
 import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
@@ -16,6 +16,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { AuthenticatedUser } from '../auth/interfaces/authenticated-request.interface';
 import { Role } from '../common/roles.enum';
 import { UsersRepository } from '../users/users.repository';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PaymentsService {
@@ -39,8 +40,6 @@ export class PaymentsService {
     const trip = await this.tripsService.findOne(dto.tripId);
     const seatIds = [...new Set(dto.seatIds)];
 
-    // Reserva todos los asientos pedidos. Si alguno falla (ya vendido/reservado),
-    // liberamos los que sí se habían reservado y cortamos ahí.
     const reserved: string[] = [];
     try {
       for (const seatId of seatIds) {
@@ -72,6 +71,8 @@ export class PaymentsService {
     );
 
     try {
+      const baseUrl = (environment.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+
       const session = await this.stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
@@ -85,8 +86,8 @@ export class PaymentsService {
             quantity,
           },
         ],
-        success_url: `${environment.FRONTEND_URL}/pago/exitoso?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${environment.FRONTEND_URL}/pago/cancelado`,
+        success_url: `${baseUrl}/pago/exitoso?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/pago/cancelado?payment_id=${payment.id}`,
         metadata: {
           paymentId: payment.id,
           tripId: trip.id,
@@ -123,7 +124,7 @@ export class PaymentsService {
         await this.markPaymentAsPaid(event.data.object);
         break;
       case 'checkout.session.expired':
-        await this.cancelPayment(event.data.object.id);
+        await this.cancelPaymentBySessionId(event.data.object.id);
         break;
       default:
         break;
@@ -200,15 +201,42 @@ export class PaymentsService {
     }
   }
 
-  private async cancelPayment(sessionId: string) {
+  async cancelPaymentById(paymentId: string) {
+    const payment = await this.paymentsRepository.findOne({
+      where: { id: paymentId },
+    });
+    if (!payment) throw new NotFoundException('Pago no encontrado');
+
+    if (
+      payment.status === PaymentStatus.Paid ||
+      payment.status === PaymentStatus.Canceled
+    ) {
+      return payment;
+    }
+
+    payment.status = PaymentStatus.Canceled;
+    await this.paymentsRepository.save(payment);
+
+    const seatIds = payment.seatIds ?? [];
+    await Promise.all(seatIds.map((id) => this.tripsService.releaseSeat(id)));
+
+    if (payment.stripeSessionId) {
+      try {
+        await this.stripe.checkout.sessions.expire(payment.stripeSessionId);
+      } catch (e) {
+        // Ignorar si la sesión ya había expirado o concluido
+      }
+    }
+
+    return { message: 'Pago cancelado y asientos liberados', paymentId: payment.id };
+  }
+
+  async cancelPaymentBySessionId(sessionId: string) {
     const payment = await this.paymentsRepository.findOne({
       where: { stripeSessionId: sessionId },
     });
     if (!payment) return;
-    payment.status = PaymentStatus.Canceled;
-    await this.paymentsRepository.save(payment);
-    const seatIds = payment.seatIds ?? [];
-    await Promise.all(seatIds.map((id) => this.tripsService.releaseSeat(id)));
+    return await this.cancelPaymentById(payment.id);
   }
 
   async findOne(id: string) {
@@ -247,7 +275,6 @@ export class PaymentsService {
       );
     }
 
-    // 1. Solicitar el reembolso a Stripe
     try {
       await this.stripe.refunds.create({
         payment_intent: payment.stripePaymentIntentId,
@@ -258,17 +285,67 @@ export class PaymentsService {
       );
     }
 
-    // 2. Actualizar el estado del pago en BD
     payment.status = PaymentStatus.Refunded;
     await this.paymentsRepository.save(payment);
 
-    // 3. Liberar los asientos ocupados
     const seatIds = payment.seatIds ?? [];
     if (seatIds.length > 0) {
-      await Promise.all(seatIds.map((id) => this.tripsService.releaseSeat(id)));
+      await Promise.all(
+        seatIds.map((id) => this.tripsService.releaseSeat(id)),
+      );
     }
 
-    return { message: 'Pago reembolsado correctamente', paymentId: payment.id };
+    return {
+      message: 'Pago reembolsado correctamente',
+      paymentId: payment.id,
+    };
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async releaseExpiredReservations() {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+    const expiredPayments = await this.paymentsRepository.find({
+      where: {
+        status: PaymentStatus.Pending,
+        createdAt: LessThan(tenMinutesAgo),
+      },
+    });
+
+    for (const payment of expiredPayments) {
+      payment.status = PaymentStatus.Canceled;
+      await this.paymentsRepository.save(payment);
+
+      if (payment.seatIds && payment.seatIds.length > 0) {
+        await Promise.all(
+          payment.seatIds.map((seatId) => this.tripsService.releaseSeat(seatId)),
+        );
+      }
+    }
+  }
+
+  async getAvailableSeats(tripId: string) {
+    const TEN_MINUTES_AGO = new Date(Date.now() - 10 * 60 * 1000);
+
+    const expiredPayments = await this.paymentsRepository.find({
+      where: {
+        status: PaymentStatus.Pending,
+        createdAt: LessThan(TEN_MINUTES_AGO),
+      },
+    });
+
+    for (const payment of expiredPayments) {
+      payment.status = PaymentStatus.Canceled;
+      await this.paymentsRepository.save(payment);
+
+      if (payment.seatIds && payment.seatIds.length > 0) {
+        await Promise.all(
+          payment.seatIds.map((seatId) => this.tripsService.releaseSeat(seatId)),
+        );
+      }
+    }
+
+    return await this.tripsService.findAvailableSeats(tripId);
   }
 
   private async assertPaymentAccess(

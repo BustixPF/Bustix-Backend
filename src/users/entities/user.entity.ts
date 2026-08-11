@@ -73,6 +73,9 @@ export class User {
   @Column({ type: 'uuid', nullable: true })
   companyId?: string;
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
   @ManyToOne(() => Company, (company) => company.admins, { nullable: true })
   @JoinColumn({ name: 'companyId' })
   company?: Company;

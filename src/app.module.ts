@@ -16,6 +16,8 @@ import { SeederModule } from './seeder/seeder.module';
 import { MetricsModule } from './metrics/metric.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChatbotModule } from './chatbot/chatbot.module';
+import { AuditModule } from './auditLog/auditLog.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { ChatbotModule } from './chatbot/chatbot.module';
     SeederModule,
     ChatbotModule,
     MetricsModule,
+    AuditModule,
+    HealthModule, // 👈 Se agrega para que TypeORM cargue la entidad e instancie la tabla audit_logs
   ],
   controllers: [AppController],
   providers: [AppService],

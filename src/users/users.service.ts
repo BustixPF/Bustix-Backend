@@ -3,10 +3,15 @@ import * as bcrypt from 'bcrypt';
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '../common/roles.enum';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     if (createUserDto.password !== createUserDto.confirmPassword) {
@@ -33,5 +38,21 @@ export class UsersService {
 
   remove(id: string) {
     return this.usersRepository.deleteUser(id);
+  }
+
+  async updateUserRole(id: string, role: Role) {
+    const updatedUser = await this.usersRepository.updateUserRole(id, role);
+
+    try {
+      await this.notificationsService.sendRoleChangedEmail(updatedUser);
+    } catch (error) {
+      console.error(`Error al enviar notificación a ${updatedUser.email}:`, error);
+    }
+
+    return updatedUser;
+  }
+
+  updateUserActive(id: string, isActive: boolean) {
+    return this.usersRepository.updateUserActive(id, isActive);
   }
 }
