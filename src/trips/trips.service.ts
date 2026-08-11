@@ -12,6 +12,7 @@ import { Route } from '../routes/entities/routes.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { TripStatus } from '../common/trip-status.enum';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { UpdateTripStatusDto } from './dto/update-trip-status.dto';
 
 @Injectable()
 export class TripsService {
@@ -74,6 +75,19 @@ export class TripsService {
     return trip;
   }
 
+  async updateStatus(id: string, dto: UpdateTripStatusDto) {
+    const trip = await this.findOne(id);
+
+    if (dto.status === TripStatus.RESCHEDULED && dto.newDepartureDate) {
+      trip.departureDate = new Date(dto.newDepartureDate);
+      trip.status = TripStatus.ON_TIME;
+    } else {
+      trip.status = dto.status;
+    }
+
+    return this.tripsRepository.save(trip);
+  }
+
   async findAvailableSeats(tripId: string) {
     await this.findOne(tripId);
     return this.seatsRepository.find({
@@ -125,7 +139,12 @@ export class TripsService {
     const now = new Date();
 
     for (const trip of trips) {
-      if (trip.status === TripStatus.CANCELLED) continue;
+      const MANUAL_STATUSES = [
+        TripStatus.CANCELLED,
+        TripStatus.DELAYED,
+        TripStatus.RESCHEDULED,
+      ];
+      if (MANUAL_STATUSES.includes(trip.status)) continue;
 
       if (now >= trip.departureDate) {
         trip.status = TripStatus.DEPARTED;
