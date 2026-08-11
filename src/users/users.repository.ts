@@ -29,6 +29,19 @@ export class UsersRepository {
     });
   }
 
+  async getCustomersByCompany(
+    companyId: string,
+  ): Promise<Omit<User, 'password'>[]> {
+    return this.usersOrmRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.tickets', 'ticket')
+      .innerJoin('ticket.company', 'company')
+      .where('company.id = :companyId', { companyId })
+      .distinct(true)
+      .orderBy('user.name', 'ASC')
+      .getMany();
+  }
+
   async getUserById(id: string): Promise<Omit<User, 'password'>> {
     const foundUser = await this.usersOrmRepository.findOneBy({ id });
     if (!foundUser) {
@@ -40,7 +53,7 @@ export class UsersRepository {
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    return await this.usersOrmRepository.findOneBy({ email });
+    return this.findByEmail(email);
   }
 
   async addUser(newUserData: CreateUserDto): Promise<Omit<User, 'password'>> {
@@ -101,7 +114,11 @@ export class UsersRepository {
   }
 
   async findByEmail(email: string) {
-    return await this.usersOrmRepository.findOneBy({ email });
+    return this.usersOrmRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
   }
 
   async createGoogleUser(userData: {

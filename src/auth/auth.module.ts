@@ -9,6 +9,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard'; // 👈 1. Importar el guard
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { environment } from '../config/environment';
 
 @Module({
   imports: [
@@ -18,10 +19,13 @@ import { NotificationsModule } from '../notifications/notifications.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '1h' },
-      }),
+      useFactory: (configService: ConfigService) => {
+        void configService;
+        return {
+          secret: environment.JWT_SECRET,
+          signOptions: { expiresIn: '1h' },
+        };
+      },
     }),
   ],
   controllers: [AuthController],

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export type EmailTemplateName =
@@ -43,10 +43,19 @@ export class EmailTemplatesService {
     const cached = this.templates.get(templateName);
     if (cached) return cached;
 
-    const template = readFileSync(
+    const paths = [
+      join(__dirname, 'templates', templateName),
       join(__dirname, '..', '..', 'notifications', 'templates', templateName),
-      'utf8',
-    );
+    ];
+    const templatePath = paths.find((path) => existsSync(path));
+
+    if (!templatePath) {
+      throw new Error(
+        `No se encontró la plantilla ${templateName}. Rutas revisadas: ${paths.join(', ')}`,
+      );
+    }
+
+    const template = readFileSync(templatePath, 'utf8');
     this.templates.set(templateName, template);
     return template;
   }

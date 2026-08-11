@@ -23,7 +23,7 @@ export class Company {
   @Column()
   phone: string; // TELÉFONO
 
-  @Column()
+  @Column({ select: false })
   password: string; // CONTRASEÑA (encriptada con bcrypt)
 
   @Column({

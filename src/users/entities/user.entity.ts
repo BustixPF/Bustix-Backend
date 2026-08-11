@@ -37,7 +37,7 @@ export class User {
   /**
    * Password hasheado (nunca se guarda en texto plano)
    */
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true, select: false })
   password: string;
 
   /**

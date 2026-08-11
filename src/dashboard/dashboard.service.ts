@@ -105,11 +105,38 @@ export class DashboardService {
   }
 
   async getSales(filter?: SalesQueryDto): Promise<SaleResponseDto[]> {
+    return this.querySales(filter);
+  }
+
+  async getCompanySales(
+    adminUserId: string,
+    filter?: SalesQueryDto,
+  ): Promise<SaleResponseDto[]> {
+    const companyId = await this.getAdminCompanyId(adminUserId);
+    return this.querySales(filter, companyId);
+  }
+
+  async getCompanyCustomers(
+    adminUserId: string,
+  ): Promise<DashboardUserResponseDto[]> {
+    const companyId = await this.getAdminCompanyId(adminUserId);
+    const users = await this.usersRepository.getCustomersByCompany(companyId);
+    return users.map((user) => this.toUserResponse(user));
+  }
+
+  private async querySales(
+    filter?: SalesQueryDto,
+    companyId?: string,
+  ): Promise<SaleResponseDto[]> {
     const queryBuilder = this.ticketRepo
       .createQueryBuilder('ticket')
       .leftJoinAndSelect('ticket.user', 'user')
       .leftJoinAndSelect('ticket.company', 'company')
       .orderBy('ticket.purchaseDate', 'DESC');
+
+    if (companyId) {
+      queryBuilder.andWhere('company.id = :companyId', { companyId });
+    }
 
     if (filter?.userId) {
       queryBuilder.andWhere('user.id = :userId', { userId: filter.userId });
@@ -135,6 +162,16 @@ export class DashboardService {
 
     const tickets = await queryBuilder.getMany();
     return tickets.map((ticket) => this.toSaleResponse(ticket));
+  }
+
+  private async getAdminCompanyId(adminUserId: string): Promise<string> {
+    const admin = await this.usersRepository.getUserById(adminUserId);
+    if (!admin.companyId) {
+      throw new BadRequestException(
+        'El administrador no tiene una empresa asociada',
+      );
+    }
+    return admin.companyId;
   }
 
   async getCompanyRequests(): Promise<CompanyRequestResponseDto[]> {
@@ -393,6 +430,13 @@ export class DashboardService {
     }
     const company = await this.companiesService.findOne(user.companyId);
 
+    if (requestData.type === RouteRequestType.Delete && requestData.routeId) {
+      await this.assertRouteBelongsToCompany(
+        requestData.routeId,
+        user.companyId,
+      );
+    }
+
     const routeRequest = this.routeRequestRepo.create({
       type: requestData.type,
       origin: requestData.origin,
@@ -475,6 +519,13 @@ export class DashboardService {
   ): Promise<RouteRequestResponseDto> {
     const user = await this.usersRepository.getUserById(userId);
 
+    if (!user.companyId) {
+      throw new BadRequestException(
+        'El administrador no tiene una empresa asociada',
+      );
+    }
+    await this.assertRouteBelongsToCompany(routeId, user.companyId);
+
     const routeRequest = this.routeRequestRepo.create({
       type: RouteRequestType.Delete,
       routeId,
@@ -484,6 +535,21 @@ export class DashboardService {
 
     const savedRouteRequest = await this.routeRequestRepo.save(routeRequest);
     return this.toRouteRequestResponse(savedRouteRequest);
+  }
+
+  private async assertRouteBelongsToCompany(
+    routeId: string,
+    companyId: string,
+  ): Promise<void> {
+    const numericRouteId = Number(routeId);
+    if (!Number.isInteger(numericRouteId)) {
+      throw new BadRequestException('El identificador de ruta no es válido');
+    }
+    const route = await this.routesService.findById(numericRouteId);
+    if (!route) throw new NotFoundException('Ruta no encontrada');
+    if (route.companyId !== companyId) {
+      throw new BadRequestException('La ruta no pertenece a la empresa');
+    }
   }
 
   async getUserTickets(userId: string): Promise<TicketResponseDto[]> {

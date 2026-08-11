@@ -42,8 +42,8 @@ export class RoutesController {
   }
 
   @Post()
-  @CreateRouteDoc()
   @ApiBearerAuth()
+  @CreateRouteDoc()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   async create(@Body() routeData: Partial<Route>): Promise<Route> {
@@ -51,8 +51,8 @@ export class RoutesController {
   }
 
   @Put(':id')
-  @UpdateRouteDoc()
   @ApiBearerAuth()
+  @UpdateRouteDoc()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   async update(
@@ -63,8 +63,8 @@ export class RoutesController {
   }
 
   @Delete(':id')
-  @DeleteRouteDoc()
   @ApiBearerAuth()
+  @DeleteRouteDoc()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   async delete(@Param('id') id: number): Promise<void> {

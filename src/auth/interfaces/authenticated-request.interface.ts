@@ -6,6 +6,7 @@ export interface AuthenticatedUser {
   email: string;
   role?: Role;
   roles?: Role[];
+  companyId?: string | null;
 }
 
 export interface AuthenticatedRequest extends Request {

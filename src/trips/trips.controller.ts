@@ -33,9 +33,9 @@ export class TripsController {
     return this.tripsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.tripsService.findOne(id);
+  @Get('upcoming')
+  getUpcomingTrips() {
+    return this.tripsService.getUpcomingTrips();
   }
 
   @Get(':id/seats')
@@ -43,8 +43,8 @@ export class TripsController {
     return this.tripsService.findAvailableSeats(id);
   }
 
-  @Get('upcoming')
-  getUpcomingTrips() {
-    return this.tripsService.getUpcomingTrips();
+  @Get(':id')
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.tripsService.findOne(id);
   }
 }

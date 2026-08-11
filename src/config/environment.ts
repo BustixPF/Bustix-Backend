@@ -10,6 +10,7 @@ export const environment = {
   DB_PORT: Number(process.env.DB_PORT) || 5432,
   DB_USERNAME: process.env.DB_USERNAME || 'user',
   DB_PASSWORD: process.env.DB_PASSWORD || 'password',
+  SEED_DATABASE: process.env.SEED_DATABASE === 'true',
 
   NODE_ENV: process.env.NODE_ENV || 'development',
 
@@ -17,7 +18,7 @@ export const environment = {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
 
-  JWT_SECRET: process.env.JWT_SECRET || 'secret',
+  JWT_SECRET: process.env.JWT_SECRET || 'development-only-jwt-secret',
 
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
