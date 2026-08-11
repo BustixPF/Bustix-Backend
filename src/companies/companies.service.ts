@@ -25,7 +25,7 @@ export class CompaniesService {
     private readonly companiesRepo: CompaniesRepository,
     private readonly notificationsService: NotificationsService,
     @InjectRepository(User)
-    private readonly usersRepository: Repository<User>
+    private readonly usersRepository: Repository<User>,
   ) {}
 
   async createCompany(
@@ -83,37 +83,37 @@ export class CompaniesService {
     status: CompanyStatus,
     rejectionReason?: string,
   ): Promise<Company> {
-<<<<<<< Updated upstream
+    // 1. Validar que el estado enviado sea únicamente APPROVED o REJECTED
     if (
       status !== CompanyStatus.APPROVED &&
       status !== CompanyStatus.REJECTED
     ) {
       throw new BadRequestException('El estado debe ser APPROVED o REJECTED');
-=======
-    // 1. Validar que la empresa exista antes de operar
+    }
+
+    // 2. Validar que la empresa exista antes de operar
     await this.findOne(id);
 
-    // 2. Si se rechaza, es obligatorio enviar un motivo explicativo
+    // 3. Si se rechaza, es obligatorio enviar un motivo explicativo
     if (status === CompanyStatus.REJECTED) {
       if (!rejectionReason || rejectionReason.trim() === '') {
         throw new BadRequestException(
           'Es obligatorio proporcionar un motivo de rechazo (rejectionReason) cuando el estado es REJECTED.',
         );
       }
->>>>>>> Stashed changes
     }
 
-    // 3. Normalizar la variable: si no es REJECTED, queda como undefined
+    // 4. Normalizar la variable: si no es REJECTED, queda como undefined
     const finalReason = status === CompanyStatus.REJECTED ? rejectionReason : undefined;
 
-    // 4. Actualizar en el repositorio (pasa undefined o el string del motivo)
+    // 5. Actualizar en el repositorio (pasa undefined o el string del motivo)
     const company = await this.companiesRepo.updateCompanyStatus(
       id,
       status,
       finalReason,
     );
 
-    // 5. Notificar únicamente en decisiones definitivas (APPROVED o REJECTED)
+    // 6. Notificar únicamente en decisiones definitivas (APPROVED o REJECTED)
     if (status === CompanyStatus.APPROVED || status === CompanyStatus.REJECTED) {
       await this.notificationsService.sendCompanyRequestDecisionEmail({
         email: company.email,
@@ -125,37 +125,38 @@ export class CompaniesService {
 
     return company;
   }
- async updateCompanyActiveState(id: string, isActive: boolean): Promise<Company> {
-  const company = await this.findOne(id);
-  
-  return await this.companiesRepo.updateIsActive(company, isActive);
-}
-async assignAdmin(companyId: string, userId: string) {
-  // 1. Validar que la empresa exista
-  const company = await this.findOne(companyId);
 
-  // 2. Buscar al usuario
-  const user = await this.usersRepository.findOne({ where: { id: userId } });
-  if (!user) {
-    throw new NotFoundException(`Usuario con ID ${userId} no encontrado.`);
+  async updateCompanyActiveState(id: string, isActive: boolean): Promise<Company> {
+    const company = await this.findOne(id);
+    return await this.companiesRepo.updateIsActive(company, isActive);
   }
 
-  // 3. Reasignar empresa y actualizar rol si aplica
-  user.company = company;
-  user.role = Role.Admin; // Aseguramos que tenga el rol correspondiente
+  async assignAdmin(companyId: string, userId: string) {
+    // 1. Validar que la empresa exista
+    const company = await this.findOne(companyId);
 
-  await this.usersRepository.save(user);
+    // 2. Buscar al usuario
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado.`);
+    }
 
-  return {
-    message: `El usuario ${user.email} fue asignado exitosamente a la empresa ${company.name}.`,
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      companyId: company.id,
-    },
-  };
-}
+    // 3. Reasignar empresa y actualizar rol si aplica
+    user.company = company;
+    user.role = Role.Admin; // Aseguramos que tenga el rol correspondiente
+
+    await this.usersRepository.save(user);
+
+    return {
+      message: `El usuario ${user.email} fue asignado exitosamente a la empresa ${company.name}.`,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        companyId: company.id,
+      },
+    };
+  }
 
   // ✅ Obtener todas las empresas con estado PENDING
   async findPendingCompanies(): Promise<Company[]> {

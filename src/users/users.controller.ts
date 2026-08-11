@@ -12,9 +12,12 @@ import {
   ForbiddenException,
   Delete,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { UpdateUserActiveDto } from './dto/update-user-active.dto';
 import {
   createUsersDecorator,
   getAllUsersDecorator,
@@ -22,18 +25,10 @@ import {
   updateUsersDecorator,
 } from './users.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { Role } from '../common/roles.enum';
-<<<<<<< Updated upstream
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-=======
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/roles.guard';
-import { UpdateUserRoleDto } from './dto/update-user-role.dto';
-import { UpdateUserActiveDto } from './dto/update-user-active.dto';
->>>>>>> Stashed changes
+import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -65,20 +60,16 @@ export class UsersController {
   }
 
   @Patch(':id/role')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.superAdmin)
-@ApiOperation({ summary: 'Cambiar el rol de un usuario (SuperAdmin)' })
-async updateUserRole(
-  @Param('id', ParseUUIDPipe) id: string,
-  @Body() dto: UpdateUserRoleDto,
-) {
-  return this.usersService.updateUserRole(id, dto.role);
-}
+  @Roles(Role.superAdmin)
+  @ApiOperation({ summary: 'Cambiar el rol de un usuario (SuperAdmin)' })
+  async updateUserRole(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserRoleDto,
+  ) {
+    return this.usersService.updateUserRole(id, dto.role);
+  }
 
-@Patch(':id/active')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch(':id/active')
   @Roles(Role.superAdmin)
   @ApiOperation({ summary: 'Cambiar el estado activo/inactivo de un usuario (SuperAdmin)' })
   async updateUserActive(
