@@ -10,6 +10,7 @@ export const environment = {
   DB_PORT: Number(process.env.DB_PORT) || 5432,
   DB_USERNAME: process.env.DB_USERNAME || 'user',
   DB_PASSWORD: process.env.DB_PASSWORD || 'password',
+  SEED_DATABASE: process.env.SEED_DATABASE === 'true',
 
   NODE_ENV: process.env.NODE_ENV || 'development',
 
