@@ -4,6 +4,7 @@ import {
   Get,
   Headers,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -48,6 +49,7 @@ export class PaymentsController {
     return this.paymentsService.findOneForRequester(id, req.user!);
   }
 
+
   @Post(':id/refund')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -67,4 +69,9 @@ export class PaymentsController {
       signature,
     );
   }
+
+  @Patch(':id/cancel')
+async cancelPayment(@Param('id') id: string) {
+  return await this.paymentsService.cancelPaymentById(id);
+}
 }

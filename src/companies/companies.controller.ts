@@ -8,6 +8,8 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  UseInterceptors,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { Company } from './entities/company.entity';
@@ -32,7 +34,10 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { UpdateCompanyStatusDto } from './dto/update-company.dto';
 import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
-
+import { AuditInterceptor } from '../auditLog/auditLog.interceptor';
+import { AuditAction } from '../auditLog/auditLog.decorator';
+import { AssignAdminDto } from '../users/dto/assign-admin.dto';
+import { UpdateCompanyActiveDto } from './dto/update-company-active.dto';
 @ApiTags('companies')
 @Controller('companies')
 export class CompaniesController {
@@ -71,11 +76,13 @@ export class CompaniesController {
   @Patch(':id/status')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superAdmin)
-  @ApiOperation({
-    summary: 'Aprobar o rechazar la solicitud de una empresa (SuperAdmin)',
-  })
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateCompanyStatusDto) {
+  @Roles(Role.superAdmin, Role.Admin)
+  @UseInterceptors(AuditInterceptor) // 👈 Interceptor
+  @AuditAction('UPDATE_COMPANY_STATUS')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateCompanyStatusDto,
+  ) {
     return this.companiesService.updateCompanyStatus(id, dto.status);
   }
 
@@ -103,6 +110,29 @@ export class CompaniesController {
       body?.reason,
     );
   }
+
+  @Patch(':id/assign-admin')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.superAdmin)
+@ApiOperation({ summary: 'Vincular o reasignar un administrador a una empresa (SuperAdmin)' })
+async assignAdmin(
+  @Param('id', ParseUUIDPipe) companyId: string,
+  @Body() dto: AssignAdminDto,
+) {
+  return this.companiesService.assignAdmin(companyId, dto.userId);
+}
+  @Patch(':id/active')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.superAdmin)
+@ApiOperation({ summary: 'Suspender o activar una empresa (SuperAdmin)' })
+async updateActiveState(
+  @Param('id', ParseUUIDPipe) id: string,
+  @Body() dto: UpdateCompanyActiveDto,
+) {
+  return this.companiesService.updateCompanyActiveState(id, dto.isActive);
+}
 
   // 3. RUTAS PARAMETRIZADAS GENERALES
   @Get(':id')

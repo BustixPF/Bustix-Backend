@@ -1,6 +1,8 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsInt,
+  IsNotEmpty,
   IsNumber,
   IsPositive,
   IsString,
@@ -9,6 +11,7 @@ import {
   Min,
 } from 'class-validator';
 
+// 1. DTO para crear un viaje (SIN status)
 export class CreateTripDto {
   /** Id de la empresa que opera el viaje */
   @IsUUID()
@@ -41,4 +44,15 @@ export class CreateTripDto {
   @IsInt()
   @Min(1)
   totalSeats: number;
+}
+
+// 2. DTO exclusivo para actualizar el estado (EXPORTADO)
+export class UpdateTripStatusDto {
+  @ApiProperty({
+    description: 'Estado al cual se desea cambiar el viaje',
+    example: 'CANCELLED',
+  })
+  @IsString()
+  @IsNotEmpty()
+  status: string;
 }

@@ -36,6 +36,6 @@ export class ScheduleRequestResponseDto {
   @ApiPropertyOptional()
   message?: string;
 
-  @ApiProperty({ type: () => DashboardUserResponseDto })
-  requestedBy: DashboardUserResponseDto;
+@ApiPropertyOptional({ type: () => DashboardUserResponseDto, nullable: true })
+requestedBy: DashboardUserResponseDto | null;
 }

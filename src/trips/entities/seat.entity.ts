@@ -7,6 +7,7 @@ import {
   Unique,
 } from 'typeorm';
 import { Trip } from './trip.entity';
+import { Exclude } from 'class-transformer';
 
 export enum SeatStatus {
   Available = 'available',
@@ -28,6 +29,7 @@ export class Seat {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'tripId' })
+  @Exclude() // 👈 AGREGAR ESTO PARA EVITAR EL BUCLE RECURSIVO A TRIP
   trip: Trip;
 
   /**
