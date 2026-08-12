@@ -114,9 +114,10 @@ export class UsersRepository {
     return userNoPassword;
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<User | null> {
     return this.usersOrmRepository
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.company', 'company')
       .addSelect('user.password')
       .where('user.email = :email', { email })
       .getOne();
@@ -134,6 +135,7 @@ export class UsersRepository {
 
     return await this.usersOrmRepository.save(newUser);
   }
+
   async deleteUser(id: string): Promise<Omit<User, 'password'>> {
     const foundUser = await this.usersOrmRepository.findOneBy({ id });
     if (!foundUser) {
@@ -148,7 +150,9 @@ export class UsersRepository {
   }
 
   async findOne(id: string): Promise<User | null> {
-    return this.usersOrmRepository.findOne({ where: { id } });
+    return this.usersOrmRepository.findOne({
+      where: { id }
+    });
   }
 
   async updateUserRole(id: string, role: Role): Promise<Omit<User, 'password'>> {
@@ -165,10 +169,7 @@ export class UsersRepository {
     return userNoPassword;
   }
 
- async updateUserActive(
-    id: string,
-    isActive: boolean,
-  ): Promise<Omit<User, 'password'>> {
+  async updateActive(id: string, isActive: boolean): Promise<Omit<User, 'password'>> {
     const user = await this.usersOrmRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException(`No existe usuario con id ${id}`);
@@ -181,6 +182,4 @@ export class UsersRepository {
     void password;
     return userNoPassword;
   }
-
- 
 }

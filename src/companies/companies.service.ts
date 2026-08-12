@@ -128,7 +128,17 @@ export class CompaniesService {
 
   async updateCompanyActiveState(id: string, isActive: boolean): Promise<Company> {
     const company = await this.findOne(id);
-    return await this.companiesRepo.updateIsActive(company, isActive);
+    const updatedCompany = await this.companiesRepo.updateIsActive(company, isActive);
+
+    // Si la empresa se desactiva, desactivamos también a sus admins asociados
+    if (!isActive) {
+      await this.usersRepository.update(
+        { company: { id } },
+        { isActive: false },
+      );
+    }
+
+    return updatedCompany;
   }
 
   async assignAdmin(companyId: string, userId: string) {
