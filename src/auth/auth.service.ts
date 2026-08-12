@@ -36,7 +36,21 @@ export class AuthService {
     const { email, firstName, lastName, picture } = reqUser;
     let user = await this.usersRepository.findByEmail(email);
 
-    if (!user) {
+    if (user) {
+      // 1. Validar si el usuario existente está desactivado
+      if (user.isActive === false) {
+        throw new UnauthorizedException(
+          'Esta cuenta de usuario se encuentra desactivada. Contacte al administrador.',
+        );
+      }
+
+      // 2. Validar si la empresa asociada está desactivada
+      if (user.company && user.company.isActive === false) {
+        throw new UnauthorizedException(
+          'La empresa asociada a esta cuenta se encuentra desactivada.',
+        );
+      }
+    } else {
       user = await this.usersRepository.createGoogleUser({
         email,
         name: `${firstName} ${lastName}`.trim(),
@@ -73,6 +87,11 @@ export class AuthService {
 
     const existUser = await this.usersRepository.getUserByEmail(cleanEmail);
     if (existUser) {
+      if (existUser.isActive === false) {
+        throw new UnauthorizedException(
+          'La cuenta asociada a este correo se encuentra desactivada.',
+        );
+      }
       throw new ConflictException('El usuario ya está registrado');
     }
 
@@ -117,6 +136,20 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    // 1. Validar estado del usuario
+    if (user.isActive === false) {
+      throw new UnauthorizedException(
+        'Esta cuenta de usuario se encuentra desactivada. Contacte al administrador.',
+      );
+    }
+
+    // 2. Validar estado de la empresa (si pertenece a una)
+    if (user.company && user.company.isActive === false) {
+      throw new UnauthorizedException(
+        'La empresa asociada a esta cuenta se encuentra desactivada.',
+      );
     }
 
     if (!user.password) {

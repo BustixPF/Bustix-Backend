@@ -77,7 +77,10 @@ export class CompaniesRepository {
 
   async findApproved(): Promise<Company[]> {
     return this.companyRepo.find({
-      where: { status: CompanyStatus.APPROVED },
+      where: { 
+        status: CompanyStatus.APPROVED,
+        isActive: true, // 👈 Se agregan únicamente empresas activas
+      },
       order: { name: 'ASC' },
     });
   }
