@@ -6,9 +6,10 @@ import { FileUploadController } from './file-upload.controller';
 import { Document } from './entities/file-uplaod.entity';
 import { Company } from '../companies/entities/company.entity';
 import { CloudinaryConfig } from '../config/claudinary';
+import { User } from '../users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Document, Company])],
+  imports: [TypeOrmModule.forFeature([Document, Company, User])],
   controllers: [FileUploadController],
   providers: [FileUploadService, FileUploadRepository, CloudinaryConfig],
   exports: [FileUploadService],

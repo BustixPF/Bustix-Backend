@@ -76,6 +76,12 @@ export class User {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  /**
+   * Foto de perfil del usuario
+   */
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  profilePicture?: string;
+
   @ManyToOne(() => Company, (company) => company.admins, { nullable: true })
   @JoinColumn({ name: 'companyId' })
   company?: Company;
