@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { Between, In, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import { Trip } from './entities/trip.entity';
 import { Seat, SeatStatus } from './entities/seat.entity';
 import { Route } from '../routes/entities/routes.entity';
@@ -95,7 +95,7 @@ export class TripsService {
         departureDate: trip.departureDate,
         price: trip.price,
         totalSeats: trip.totalSeats,
-        status: (trip as any).status || 'ACTIVE',
+        status: trip.status,
         route: trip.route
           ? {
               id: trip.route.id,
@@ -144,17 +144,17 @@ export class TripsService {
   }
 
   async findAvailableSeats(tripId: string) {
-  // Trae los asientos del viaje cuyo estado NO sea ocupado por un pago verificado
-  return await this.seatsRepository.find({
-    where: {
-      trip: { id: tripId },
-      status: SeatStatus.Available, // O asegura que no dependa de un 'RESERVED' huérfano
-    },
-    order: { seatNumber: 'ASC' },
-  });
-}
+    // Trae los asientos del viaje cuyo estado NO sea ocupado por un pago verificado
+    return await this.seatsRepository.find({
+      where: {
+        trip: { id: tripId },
+        status: SeatStatus.Available, // O asegura que no dependa de un 'RESERVED' huérfano
+      },
+      order: { seatNumber: 'ASC' },
+    });
+  }
 
-  async updateStatusBySuperAdmin(id: string, status: string) {
+  async updateStatusBySuperAdmin(id: string, status: TripStatus) {
     const trip = await this.tripsRepository.findOne({
       where: { id },
       relations: { seats: true },
@@ -164,9 +164,11 @@ export class TripsService {
       throw new NotFoundException(`Viaje con id ${id} no encontrado`);
     }
 
-    if (status === 'CANCELLED' || status === 'INACTIVE') {
+    if (status === TripStatus.CANCELLED) {
       const seats = trip.seats || [];
-      const soldSeats = seats.filter((s) => s.status === SeatStatus.Sold).length;
+      const soldSeats = seats.filter(
+        (s) => s.status === SeatStatus.Sold,
+      ).length;
 
       if (soldSeats > 0) {
         throw new BadRequestException(
@@ -175,7 +177,7 @@ export class TripsService {
       }
     }
 
-    (trip as any).status = status;
+    trip.status = status;
     const updatedTrip = await this.tripsRepository.save(trip);
 
     return {
@@ -186,7 +188,7 @@ export class TripsService {
       departureDate: updatedTrip.departureDate,
       price: updatedTrip.price,
       totalSeats: updatedTrip.totalSeats,
-      status: (updatedTrip as any).status || status,
+      status: updatedTrip.status,
       message: `El estado del viaje se actualizó correctamente a ${status}.`,
     };
   }
@@ -240,30 +242,27 @@ export class TripsService {
       .execute();
   }
 
-  // Cron job para actualizar estado del viaje
-  @Cron(CronExpression.EVERY_MINUTE)
+  // Actualiza únicamente los viajes que cruzaron una transición automática.
+  @Cron(CronExpression.EVERY_MINUTE, { waitForCompletion: true })
   async updateTripsStatus() {
-    const trips = await this.tripsRepository.find();
     const now = new Date();
+    const boardingUntil = new Date(now.getTime() + 30 * 60 * 1000);
 
-    for (const trip of trips) {
-      const MANUAL_STATUSES = [
-        TripStatus.CANCELLED,
-        TripStatus.DELAYED,
-        TripStatus.RESCHEDULED,
-      ];
-      if (MANUAL_STATUSES.includes(trip.status)) continue;
+    await this.tripsRepository.update(
+      {
+        status: In([TripStatus.ON_TIME, TripStatus.BOARDING]),
+        departureDate: LessThanOrEqual(now),
+      },
+      { status: TripStatus.DEPARTED },
+    );
 
-      if (now >= trip.departureDate) {
-        trip.status = TripStatus.DEPARTED;
-      } else if (now >= new Date(trip.departureDate.getTime() - 30 * 60000)) {
-        trip.status = TripStatus.BOARDING;
-      } else {
-        trip.status = TripStatus.ON_TIME;
-      }
-
-      await this.tripsRepository.save(trip);
-    }
+    await this.tripsRepository.update(
+      {
+        status: TripStatus.ON_TIME,
+        departureDate: Between(now, boardingUntil),
+      },
+      { status: TripStatus.BOARDING },
+    );
   }
 
   async getUpcomingTrips() {
