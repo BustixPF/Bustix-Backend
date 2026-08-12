@@ -351,6 +351,35 @@ export class NotificationsService {
   }
 
   private formatSeats(seatNumbers?: number[]): string {
-    return seatNumbers?.length ? seatNumbers.join(', ') : 'Por confirmar';
+    return seatNumbers?.length ? seatNumbers.join(', ') : 'Por confirmar'; }
+
+
+
+  async sendPaymentCanceledEmail(payload: {
+    email: string;
+    name: string;
+    origin: string;
+    destination: string;
+    seatCount: number;
+    totalAmount: number;
+    currency: string;
+  }): Promise<void> {
+    const formattedAmount = this.formatCurrency(payload.totalAmount, payload.currency);
+    const textContent = `Hola ${payload.name}, te informamos que tu pago/reserva para la ruta ${payload.origin} - ${payload.destination} (${payload.seatCount} pasaje(s)) por un total de ${formattedAmount} fue cancelada.`;
+
+    return this.dispatchEmail({
+      to: payload.email,
+      subject: 'Tu pago / reserva fue cancelada',
+      html: textContent,
+    });
   }
+
+  private formatCurrency(amount: number, currency: string = 'COP'): string {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+    minimumFractionDigits: 0,
+  }).format(amount);
 }
+}
+

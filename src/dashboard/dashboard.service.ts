@@ -463,12 +463,14 @@ export class DashboardService {
     return this.toRouteRequestResponse(savedRouteRequest);
   }
 
-  async requestSchedule(
+ async requestSchedule(
     userId: string,
     payload: CreateScheduleRequestDto,
   ): Promise<ScheduleRequestResponseDto> {
     const user = await this.usersRepository.getUserById(userId);
-    if (!user.companyId) {
+
+    // 1. Restauramos la validación estricta para el usuario normal
+    if (!user.companyId && user.role !== Role.superAdmin) {
       throw new BadRequestException(
         'El administrador no tiene una empresa asociada',
       );
@@ -478,7 +480,11 @@ export class DashboardService {
     if (!route) {
       throw new NotFoundException('Ruta no encontrada');
     }
-    if (route.companyId !== user.companyId) {
+
+    // Si es SuperAdmin usa el de la ruta; si es Admin normal usa el del usuario
+    const companyId = user.companyId || route.companyId;
+
+    if (user.companyId && route.companyId !== user.companyId) {
       throw new BadRequestException(
         'La ruta no pertenece a la empresa del administrador',
       );
@@ -491,7 +497,7 @@ export class DashboardService {
 
     const request = await this.scheduleRequestRepo.save(
       this.scheduleRequestRepo.create({
-        companyId: user.companyId,
+        companyId,
         routeId: route.id,
         route,
         departureDate,
@@ -702,22 +708,24 @@ export class DashboardService {
     };
   }
 
-  private toScheduleRequestResponse(
-    request: ScheduleRequest,
-  ): ScheduleRequestResponseDto {
-    return {
-      id: request.id,
-      companyId: request.companyId,
-      routeId: request.routeId,
-      origin: request.route.origin,
-      destination: request.route.destination,
-      departureDate: request.departureDate,
-      price: Number(request.price),
-      totalSeats: request.totalSeats,
-      status: request.status,
-      createdTripId: request.createdTripId,
-      message: request.message,
-      requestedBy: this.toUserResponse(request.requestedBy),
-    };
-  }
+ private toScheduleRequestResponse(
+  request: ScheduleRequest,
+): ScheduleRequestResponseDto {
+  return {
+    id: request.id,
+    companyId: request.companyId,
+    routeId: request.routeId,
+    origin: request.route?.origin ?? '',
+    destination: request.route?.destination ?? '',
+    departureDate: request.departureDate,
+    price: Number(request.price),
+    totalSeats: request.totalSeats,
+    status: request.status,
+    createdTripId: request.createdTripId,
+    message: request.message,
+    requestedBy: request.requestedBy
+      ? this.toUserResponse(request.requestedBy)
+      : null,
+  };
+}
 }

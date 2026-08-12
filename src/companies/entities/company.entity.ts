@@ -42,6 +42,8 @@ export class Company {
   @OneToMany(() => Ticket, (ticket) => ticket.company)
   tickets?: Ticket[];
 
+  @Column({ default: true }) isActive: boolean;
+
   // Relación con rutas
   @OneToMany(() => Route, (route) => route.company)
   routes: Route[];

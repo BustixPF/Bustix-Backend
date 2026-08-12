@@ -7,14 +7,12 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  ParseFilePipe,
 } from '@nestjs/common';
+import { MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
 import { FileUploadService } from './file-upload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
-import {
-  updateFileUserDecorator,
-  uploadToCloudinaryDecorator,
-} from './file-upload.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
@@ -28,22 +26,26 @@ export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('company/:companyId')
-  @uploadToCloudinaryDecorator()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
+        file: { type: 'string', format: 'binary' },
       },
     },
   })
   async uploadFileCompany(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5000000 }), // 5MB
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf|docx)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
     @Param('companyId') companyId: string,
     @Req() req: AuthenticatedRequest,
   ) {
@@ -56,29 +58,36 @@ export class FileUploadController {
     return this.fileUploadService.uploadFile(file, companyId);
   }
 
-  @Post('user/:userId')
-  @updateFileUserDecorator()
+  // Actualización de foto de perfil del usuario
+  @Post('user/:userId/profile-picture')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
+        file: { type: 'string', format: 'binary' },
       },
     },
   })
-  async uploadFileUser(
-    @UploadedFile() file: Express.Multer.File,
+  async updateProfilePicture(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 2000000 }), // 2MB
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp|gif|avif)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
     @Param('userId') userId: string,
     @Req() req: AuthenticatedRequest,
   ) {
     if (req.user?.role !== Role.superAdmin && req.user?.id !== userId) {
-      throw new ForbiddenException('No podés subir archivos a otro usuario');
+      throw new ForbiddenException(
+        'No podés actualizar la foto de otro usuario',
+      );
     }
-    return this.fileUploadService.uploadFile(file, userId);
+    return this.fileUploadService.uploadUserProfilePicture(file, userId);
   }
 }

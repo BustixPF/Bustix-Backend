@@ -46,7 +46,7 @@ export class TripsService {
       price: dto.price,
       totalSeats: dto.totalSeats,
       route,
-      status: TripStatus.ON_TIME, // 👈 estado inicial
+      status: TripStatus.ON_TIME,
     });
     const savedTrip = await this.tripsRepository.save(trip);
 
@@ -65,10 +65,65 @@ export class TripsService {
     return this.tripsRepository.find({ order: { departureDate: 'ASC' } });
   }
 
+  async findAllForSuperAdmin() {
+    const trips = await this.tripsRepository.find({
+      relations: {
+        route: true,
+        seats: true,
+        company: true,
+      },
+      order: { departureDate: 'DESC' },
+    });
+
+    return trips.map((trip) => {
+      const seats = trip.seats || [];
+      const soldSeatsCount = seats.filter(
+        (s) => s.status === SeatStatus.Sold,
+      ).length;
+      const reservedSeatsCount = seats.filter(
+        (s) => s.status === SeatStatus.Reserved,
+      ).length;
+      const availableSeatsCount = seats.filter(
+        (s) => s.status === SeatStatus.Available,
+      ).length;
+
+      return {
+        id: trip.id,
+        companyId: trip.companyId,
+        origin: trip.origin,
+        destination: trip.destination,
+        departureDate: trip.departureDate,
+        price: trip.price,
+        totalSeats: trip.totalSeats,
+        status: (trip as any).status || 'ACTIVE',
+        route: trip.route
+          ? {
+              id: trip.route.id,
+              origin: trip.route.origin,
+              destination: trip.route.destination,
+              duration: trip.route.duration,
+              price: trip.route.price,
+              companyId: trip.route.companyId,
+            }
+          : null,
+        occupancy: {
+          total: trip.totalSeats,
+          sold: soldSeatsCount,
+          reserved: reservedSeatsCount,
+          available: availableSeatsCount,
+        },
+      };
+    });
+  }
+
   async findOne(id: string) {
     const trip = await this.tripsRepository.findOne({
       where: { id },
-      relations: { company: true },
+      relations: {
+        company: true,
+        route: true,
+        seats: true,
+      },
     });
     if (!trip)
       throw new NotFoundException(`No se encontró el viaje con id ${id}`);
@@ -89,11 +144,51 @@ export class TripsService {
   }
 
   async findAvailableSeats(tripId: string) {
-    await this.findOne(tripId);
-    return this.seatsRepository.find({
-      where: { tripId, status: SeatStatus.Available },
-      order: { seatNumber: 'ASC' },
+  // Trae los asientos del viaje cuyo estado NO sea ocupado por un pago verificado
+  return await this.seatsRepository.find({
+    where: {
+      trip: { id: tripId },
+      status: SeatStatus.Available, // O asegura que no dependa de un 'RESERVED' huérfano
+    },
+    order: { seatNumber: 'ASC' },
+  });
+}
+
+  async updateStatusBySuperAdmin(id: string, status: string) {
+    const trip = await this.tripsRepository.findOne({
+      where: { id },
+      relations: { seats: true },
     });
+
+    if (!trip) {
+      throw new NotFoundException(`Viaje con id ${id} no encontrado`);
+    }
+
+    if (status === 'CANCELLED' || status === 'INACTIVE') {
+      const seats = trip.seats || [];
+      const soldSeats = seats.filter((s) => s.status === SeatStatus.Sold).length;
+
+      if (soldSeats > 0) {
+        throw new BadRequestException(
+          `No se puede cambiar el estado a ${status} porque el viaje tiene ${soldSeats} pasaje(s) vendido(s).`,
+        );
+      }
+    }
+
+    (trip as any).status = status;
+    const updatedTrip = await this.tripsRepository.save(trip);
+
+    return {
+      id: updatedTrip.id,
+      companyId: updatedTrip.companyId,
+      origin: updatedTrip.origin,
+      destination: updatedTrip.destination,
+      departureDate: updatedTrip.departureDate,
+      price: updatedTrip.price,
+      totalSeats: updatedTrip.totalSeats,
+      status: (updatedTrip as any).status || status,
+      message: `El estado del viaje se actualizó correctamente a ${status}.`,
+    };
   }
 
   async reserveSeat(tripId: string, seatId: string) {
@@ -132,7 +227,20 @@ export class TripsService {
     );
   }
 
-  // 👇 Cron job que corre cada minuto y actualiza estados
+  async releaseSeats(seatIds: string[]) {
+    if (!seatIds || seatIds.length === 0) return;
+    await this.seatsRepository
+      .createQueryBuilder()
+      .update(Seat)
+      .set({ status: SeatStatus.Available })
+      .where('id IN (:...seatIds) AND status != :soldStatus', {
+        seatIds,
+        soldStatus: SeatStatus.Sold,
+      })
+      .execute();
+  }
+
+  // Cron job para actualizar estado del viaje
   @Cron(CronExpression.EVERY_MINUTE)
   async updateTripsStatus() {
     const trips = await this.tripsRepository.find();

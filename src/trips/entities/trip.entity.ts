@@ -57,6 +57,7 @@ export class Trip {
   @OneToMany(() => Seat, (seat) => seat.trip, { cascade: true })
   seats: Seat[];
 
+
   // Relación con Route
   @ManyToOne(() => Route, (route) => route.trips, {
     nullable: false,

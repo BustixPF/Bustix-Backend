@@ -48,6 +48,30 @@ export class FileUploadRepository {
     });
   }
 
+  // Subida de imagen para perfil de usuario
+  async uploadImage(file: Express.Multer.File): Promise<UploadApiResponse> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = this.cloudinaryProvider.uploader.upload_stream(
+        { resource_type: 'image', folder: 'users/profile-pictures' },
+        (error?: UploadApiErrorResponse, result?: UploadApiResponse) => {
+          if (error || !result) {
+            return reject(
+              new Error(error?.message || 'Error al subir imagen a Cloudinary'),
+            );
+          }
+          resolve(result);
+        },
+      );
+
+      if (!file || !file.buffer) {
+        return reject(new Error('El archivo no tiene buffer'));
+      }
+
+      const stream = Readable.from(file.buffer);
+      stream.pipe(uploadStream);
+    });
+  }
+
   async saveFile(
     file: Express.Multer.File,
     companyId: string,

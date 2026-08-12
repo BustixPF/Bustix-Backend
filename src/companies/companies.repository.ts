@@ -65,6 +65,11 @@ export class CompaniesRepository {
     return updated;
   }
 
+ async updateIsActive(company: Company, isActive: boolean): Promise<Company> {
+  company.isActive = isActive;
+  return await this.companyRepo.save(company);
+}
+
   // Listar todas las empresas
   async findAll(): Promise<Company[]> {
     return this.companyRepo.find({ relations: { documents: true } });
@@ -72,7 +77,10 @@ export class CompaniesRepository {
 
   async findApproved(): Promise<Company[]> {
     return this.companyRepo.find({
-      where: { status: CompanyStatus.APPROVED },
+      where: { 
+        status: CompanyStatus.APPROVED,
+        isActive: true, // 👈 Se agregan únicamente empresas activas
+      },
       order: { name: 'ASC' },
     });
   }
