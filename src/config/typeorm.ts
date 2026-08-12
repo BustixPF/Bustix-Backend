@@ -1,6 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { environment } from './environment';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { AuditLog } from '../auditLog/entity/auditLog.entity';
 
 const config: DataSourceOptions = {
   type: 'postgres',
@@ -14,7 +15,7 @@ const config: DataSourceOptions = {
     process.env.DB_SSLMODE === 'require'
       ? { rejectUnauthorized: false }
       : false,
-  entities: ['dist/**/*.entity{.ts,.js}'],
+  entities: [AuditLog, 'dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
   logging: false,
   synchronize: false,
