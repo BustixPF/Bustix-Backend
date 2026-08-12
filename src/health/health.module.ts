@@ -6,7 +6,7 @@ import { StripeHealthIndicator } from './health-stripe';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
- imports: [TerminusModule, HttpModule, ConfigModule],
+  imports: [TerminusModule, HttpModule, ConfigModule],
   controllers: [HealthController],
   providers: [StripeHealthIndicator],
 })

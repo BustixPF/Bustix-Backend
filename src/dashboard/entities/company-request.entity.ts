@@ -29,7 +29,6 @@ export class CompanyRequest {
   @Column({ type: 'varchar', length: 255 })
   confirmPassword: string; // CONFIRMAR CONTRASEÑA
 
-
   @Column({ type: 'text', nullable: true })
   message?: string;
 
