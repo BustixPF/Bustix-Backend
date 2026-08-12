@@ -90,6 +90,8 @@ export class CompaniesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
+  @UseInterceptors(AuditInterceptor) // 👈 Agregado
+  @AuditAction('APPROVE_COMPANY')     // 👈 Agregado
   @approveCompanyDecorator()
   async approve(@Param('id') id: string) {
     return this.companiesService.updateCompanyStatus(
@@ -98,10 +100,12 @@ export class CompaniesController {
     );
   }
 
-  @Patch(':id/reject')
+ @Patch(':id/reject')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
+  @UseInterceptors(AuditInterceptor) // 👈 Agregado
+  @AuditAction('REJECT_COMPANY')      // 👈 Agregado
   @rejectCompanyDecorator()
   async reject(@Param('id') id: string, @Body() body: RejectCompanyDto) {
     return this.companiesService.updateCompanyStatus(
@@ -112,27 +116,31 @@ export class CompaniesController {
   }
 
   @Patch(':id/assign-admin')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.superAdmin)
-@ApiOperation({ summary: 'Vincular o reasignar un administrador a una empresa (SuperAdmin)' })
-async assignAdmin(
-  @Param('id', ParseUUIDPipe) companyId: string,
-  @Body() dto: AssignAdminDto,
-) {
-  return this.companiesService.assignAdmin(companyId, dto.userId);
-}
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
+  @UseInterceptors(AuditInterceptor) // 👈 Agregado
+  @AuditAction('ASSIGN_COMPANY_ADMIN') // 👈 Agregado
+  @ApiOperation({ summary: 'Vincular o reasignar un administrador a una empresa (SuperAdmin)' })
+  async assignAdmin(
+    @Param('id', ParseUUIDPipe) companyId: string,
+    @Body() dto: AssignAdminDto,
+  ) {
+    return this.companiesService.assignAdmin(companyId, dto.userId);
+  }
   @Patch(':id/active')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.superAdmin)
-@ApiOperation({ summary: 'Suspender o activar una empresa (SuperAdmin)' })
-async updateActiveState(
-  @Param('id', ParseUUIDPipe) id: string,
-  @Body() dto: UpdateCompanyActiveDto,
-) {
-  return this.companiesService.updateCompanyActiveState(id, dto.isActive);
-}
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.superAdmin)
+  @UseInterceptors(AuditInterceptor) // 👈 Agregado
+  @AuditAction('UPDATE_COMPANY_ACTIVE') // 👈 Agregado
+  @ApiOperation({ summary: 'Suspender o activar una empresa (SuperAdmin)' })
+  async updateActiveState(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCompanyActiveDto,
+  ) {
+    return this.companiesService.updateCompanyActiveState(id, dto.isActive);
+  }
 
   // 3. RUTAS PARAMETRIZADAS GENERALES
   @Get(':id')
