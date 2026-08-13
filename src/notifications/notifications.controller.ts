@@ -90,6 +90,7 @@ export class NotificationsController {
       name: dto.name ?? 'Empresa de prueba',
       status: dto.status,
       message: dto.message,
+      companyId: dto.companyId,
     });
 
     return {
@@ -121,6 +122,7 @@ export class NotificationsController {
       email: dto.email,
       name: dto.name ?? 'Usuario de prueba',
       role: dto.role,
+      companyId: dto.companyId,
     });
 
     return {

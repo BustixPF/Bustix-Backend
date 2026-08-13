@@ -21,7 +21,7 @@ export class NotificationsService {
       subject: 'Bienvenido a BusTix',
       html: this.templatesService.render('01-registro-usuario.html', {
         nombre: payload.name,
-        url_buscar: this.frontendUrl,
+        url_buscar: this.frontendPath('/viajes'),
       }),
     });
   }
@@ -31,6 +31,7 @@ export class NotificationsService {
     name: string;
     status: CompanyRequestStatus | CompanyStatus;
     message?: string;
+    companyId?: string;
   }): Promise<void> {
     const isAccepted =
       payload.status === CompanyRequestStatus.Accepted ||
@@ -45,7 +46,9 @@ export class NotificationsService {
         isAccepted
           ? {
               empresa: payload.name,
-              url_panel: this.frontendUrl,
+              url_panel: payload.companyId
+                ? this.frontendPath(`/empresa/dashboard/${payload.companyId}`)
+                : this.frontendPath('/auth/login'),
             }
           : {
               empresa: payload.name,
@@ -60,6 +63,7 @@ export class NotificationsService {
     name: string;
     role: Role;
     previousRole?: Role;
+    companyId?: string;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,
@@ -68,7 +72,7 @@ export class NotificationsService {
         rol_anterior: payload.previousRole ?? 'No disponible',
         nuevo_rol: payload.role,
         fecha_cambio: this.formatDateOnly(new Date()),
-        url_cuenta: this.frontendUrl,
+        url_cuenta: this.accountUrl(payload.role, payload.companyId),
       }),
     });
   }
@@ -97,7 +101,7 @@ export class NotificationsService {
         hora: this.formatTime(payload.departureDate),
         fecha: this.formatDateOnly(payload.departureDate),
         codigo_reserva: payload.paymentId,
-        url_tiquete: this.frontendUrl,
+        url_tiquete: this.frontendPath('/cliente/dashboard'),
       }),
     });
   }
@@ -145,6 +149,7 @@ export class NotificationsService {
     name: string;
     origin: string;
     destination: string;
+    companyId?: string;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,
@@ -153,7 +158,11 @@ export class NotificationsService {
         origen: payload.origin,
         destino: payload.destination,
         fecha_aprobacion: this.formatDateOnly(new Date()),
-        url_horarios: this.frontendUrl,
+        url_horarios: payload.companyId
+          ? this.frontendPath(
+              `/empresa/dashboard/${payload.companyId}#horarios`,
+            )
+          : this.frontendPath('/auth/login'),
       }),
     });
   }
@@ -184,6 +193,7 @@ export class NotificationsService {
     destination: string;
     departureDate: Date;
     totalSeats: number;
+    companyId?: string;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,
@@ -193,7 +203,11 @@ export class NotificationsService {
         destino: payload.destination,
         hora: this.formatTime(payload.departureDate),
         cupos: payload.totalSeats,
-        url_panel: this.frontendUrl,
+        url_panel: payload.companyId
+          ? this.frontendPath(
+              `/empresa/dashboard/${payload.companyId}#horarios`,
+            )
+          : this.frontendPath('/auth/login'),
       }),
     });
   }
@@ -225,7 +239,7 @@ export class NotificationsService {
           fecha: this.formatDateOnly(payload.departureDate),
           hora: this.formatTime(payload.departureDate),
           asiento: this.formatSeats(payload.seatNumbers),
-          url_tiquete: this.frontendUrl,
+          url_tiquete: this.frontendPath('/cliente/dashboard'),
         },
       ),
     });
@@ -326,6 +340,22 @@ export class NotificationsService {
     return environment.FRONTEND_URL.replace(/\/$/, '');
   }
 
+  private frontendPath(path: string): string {
+    return `${this.frontendUrl}/${path.replace(/^\//, '')}`;
+  }
+
+  private accountUrl(role: Role, companyId?: string): string {
+    if (role === Role.superAdmin) {
+      return this.frontendPath('/superadmin/dashboard');
+    }
+    if (role === Role.Admin) {
+      return companyId
+        ? this.frontendPath(`/empresa/dashboard/${companyId}`)
+        : this.frontendPath('/auth/login');
+    }
+    return this.frontendPath('/cliente/perfil');
+  }
+
   private formatDateOnly(date?: Date | null): string {
     if (!date) {
       return 'Por confirmar';
@@ -351,9 +381,8 @@ export class NotificationsService {
   }
 
   private formatSeats(seatNumbers?: number[]): string {
-    return seatNumbers?.length ? seatNumbers.join(', ') : 'Por confirmar'; }
-
-
+    return seatNumbers?.length ? seatNumbers.join(', ') : 'Por confirmar';
+  }
 
   async sendPaymentCanceledEmail(payload: {
     email: string;
@@ -364,7 +393,10 @@ export class NotificationsService {
     totalAmount: number;
     currency: string;
   }): Promise<void> {
-    const formattedAmount = this.formatCurrency(payload.totalAmount, payload.currency);
+    const formattedAmount = this.formatCurrency(
+      payload.totalAmount,
+      payload.currency,
+    );
     const textContent = `Hola ${payload.name}, te informamos que tu pago/reserva para la ruta ${payload.origin} - ${payload.destination} (${payload.seatCount} pasaje(s)) por un total de ${formattedAmount} fue cancelada.`;
 
     return this.dispatchEmail({
@@ -375,11 +407,10 @@ export class NotificationsService {
   }
 
   private formatCurrency(amount: number, currency: string = 'COP'): string {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 0,
-  }).format(amount);
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+      minimumFractionDigits: 0,
+    }).format(amount);
+  }
 }
-}
-

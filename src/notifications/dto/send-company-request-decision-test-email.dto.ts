@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 import { CompanyRequestStatus } from '../../dashboard/entities/company-request.entity';
 
@@ -42,4 +43,12 @@ export class SendCompanyRequestDecisionTestEmailDto {
   @IsOptional()
   @IsString({ message: 'El mensaje debe ser texto' })
   message?: string;
+
+  @ApiPropertyOptional({
+    example: '6c63dc2c-2842-48aa-98e5-e337da83eedd',
+    description: 'ID de la empresa para probar el enlace a su dashboard',
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'El companyId debe ser un UUID valido' })
+  companyId?: string;
 }

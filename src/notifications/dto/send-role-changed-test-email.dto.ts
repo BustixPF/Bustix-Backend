@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 import { Role } from '../../common/roles.enum';
 
@@ -34,4 +35,12 @@ export class SendRoleChangedTestEmailDto {
     message: 'El rol debe ser user, admin o superAdmin',
   })
   role: Role;
+
+  @ApiPropertyOptional({
+    example: '6c63dc2c-2842-48aa-98e5-e337da83eedd',
+    description: 'ID requerido para probar el dashboard del rol admin',
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'El companyId debe ser un UUID valido' })
+  companyId?: string;
 }

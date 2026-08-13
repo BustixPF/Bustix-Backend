@@ -104,7 +104,8 @@ export class CompaniesService {
     }
 
     // 4. Normalizar la variable: si no es REJECTED, queda como undefined
-    const finalReason = status === CompanyStatus.REJECTED ? rejectionReason : undefined;
+    const finalReason =
+      status === CompanyStatus.REJECTED ? rejectionReason : undefined;
 
     // 5. Actualizar en el repositorio (pasa undefined o el string del motivo)
     const company = await this.companiesRepo.updateCompanyStatus(
@@ -114,21 +115,31 @@ export class CompaniesService {
     );
 
     // 6. Notificar únicamente en decisiones definitivas (APPROVED o REJECTED)
-    if (status === CompanyStatus.APPROVED || status === CompanyStatus.REJECTED) {
+    if (
+      status === CompanyStatus.APPROVED ||
+      status === CompanyStatus.REJECTED
+    ) {
       await this.notificationsService.sendCompanyRequestDecisionEmail({
         email: company.email,
         name: company.name,
         status,
         message: finalReason,
+        companyId: company.id,
       });
     }
 
     return company;
   }
 
-  async updateCompanyActiveState(id: string, isActive: boolean): Promise<Company> {
+  async updateCompanyActiveState(
+    id: string,
+    isActive: boolean,
+  ): Promise<Company> {
     const company = await this.findOne(id);
-    const updatedCompany = await this.companiesRepo.updateIsActive(company, isActive);
+    const updatedCompany = await this.companiesRepo.updateIsActive(
+      company,
+      isActive,
+    );
 
     // Si la empresa se desactiva, desactivamos también a sus admins asociados
     if (!isActive) {

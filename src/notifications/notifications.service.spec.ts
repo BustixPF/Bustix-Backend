@@ -89,6 +89,49 @@ describe('NotificationsService', () => {
     errorMock.mockRestore();
   });
 
+  it('links role notifications to the corresponding dashboard', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+    } as Response);
+    environment.BREVO_API_KEY = 'test-token';
+    environment.BREVO_SENDER_EMAIL = 'test@bustix.com';
+    environment.FRONTEND_URL = 'https://bustix.example/';
+    const service = new NotificationsService(new EmailTemplatesService());
+
+    await service.sendRoleChangedEmail({
+      email: 'user@example.com',
+      name: 'Ana',
+      role: Role.User,
+    });
+    await service.sendRoleChangedEmail({
+      email: 'admin@example.com',
+      name: 'Empresa',
+      role: Role.Admin,
+      companyId: 'company-123',
+    });
+    await service.sendRoleChangedEmail({
+      email: 'superadmin@example.com',
+      name: 'Super Admin',
+      role: Role.superAdmin,
+    });
+
+    const links = fetchMock.mock.calls.map(([, request]) => {
+      const body = JSON.parse(request?.body as string) as {
+        htmlContent: string;
+      };
+      return body.htmlContent;
+    });
+    expect(links[0]).toContain('href="https://bustix.example/cliente/perfil"');
+    expect(links[1]).toContain(
+      'href="https://bustix.example/empresa/dashboard/company-123"',
+    );
+    expect(links[2]).toContain(
+      'href="https://bustix.example/superadmin/dashboard"',
+    );
+
+    fetchMock.mockRestore();
+  });
+
   it('renders all 12 notification templates before sending', async () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
@@ -109,6 +152,7 @@ describe('NotificationsService', () => {
       email: 'company@example.com',
       name: 'Empresa Demo',
       status: CompanyRequestStatus.Accepted,
+      companyId: 'company-123',
     });
     await service.sendCompanyRequestDecisionEmail({
       email: 'company@example.com',
@@ -121,6 +165,7 @@ describe('NotificationsService', () => {
       name: 'Ana',
       previousRole: Role.User,
       role: Role.Admin,
+      companyId: 'company-123',
     });
     await service.sendRouteRequestReceivedEmail({
       email: 'company@example.com',
@@ -128,6 +173,7 @@ describe('NotificationsService', () => {
       type: RouteRequestType.Add,
       origin: 'Bogota',
       destination: 'Medellin',
+      companyId: 'company-123',
       companyName: 'Empresa Demo',
     });
     await service.sendRouteRequestApprovedEmail({
@@ -135,6 +181,7 @@ describe('NotificationsService', () => {
       name: 'Empresa',
       origin: 'Bogota',
       destination: 'Medellin',
+      companyId: 'company-123',
     });
     await service.sendScheduleRequestReceivedEmail({
       email: 'company@example.com',
@@ -150,6 +197,7 @@ describe('NotificationsService', () => {
       destination: 'Medellin',
       departureDate,
       totalSeats: 40,
+      companyId: 'company-123',
     });
     await service.sendTicketPurchaseConfirmedEmail({
       email: 'user@example.com',
@@ -184,11 +232,31 @@ describe('NotificationsService', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(12);
-    for (const [, request] of fetchMock.mock.calls) {
+    const sentEmails = fetchMock.mock.calls.map(([, request]) => {
       const body = JSON.parse(request?.body as string) as {
         htmlContent: string;
       };
       expect(body.htmlContent).not.toMatch(/\{\{[^}]+\}\}/);
+      return body.htmlContent;
+    });
+
+    expect(sentEmails[0]).toContain('href="https://bustix.example/viajes"');
+    expect(sentEmails[2]).toContain(
+      'href="https://bustix.example/empresa/dashboard/company-123"',
+    );
+    expect(sentEmails[4]).toContain(
+      'href="https://bustix.example/empresa/dashboard/company-123"',
+    );
+    expect(sentEmails[6]).toContain(
+      'href="https://bustix.example/empresa/dashboard/company-123#horarios"',
+    );
+    expect(sentEmails[8]).toContain(
+      'href="https://bustix.example/empresa/dashboard/company-123#horarios"',
+    );
+    for (const index of [9, 10, 11]) {
+      expect(sentEmails[index]).toContain(
+        'href="https://bustix.example/cliente/dashboard"',
+      );
     }
 
     fetchMock.mockRestore();
