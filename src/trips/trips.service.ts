@@ -133,6 +133,7 @@ export class TripsService {
   async updateStatus(id: string, dto: UpdateTripStatusDto) {
     const trip = await this.findOne(id);
 
+    
     if (dto.status === TripStatus.RESCHEDULED && dto.newDepartureDate) {
       trip.departureDate = new Date(dto.newDepartureDate);
       trip.status = TripStatus.ON_TIME;

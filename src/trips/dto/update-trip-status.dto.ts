@@ -27,3 +27,4 @@ export class UpdateTripStatusDto {
   @IsOptional()
   newDepartureDate?: string;
 }
+
