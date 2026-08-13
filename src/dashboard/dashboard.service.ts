@@ -218,6 +218,7 @@ export class DashboardService {
     request.status = payload.status;
     request.message = payload.message;
     await this.companyRequestRepo.save(request);
+    let approvedCompanyId: string | undefined;
 
     if (payload.status === CompanyRequestStatus.Accepted) {
       // Crear la empresa y capturar el objeto creado
@@ -235,6 +236,7 @@ export class DashboardService {
           status: CompanyStatus.APPROVED,
         },
       );
+      approvedCompanyId = company.id;
 
       if (request.requestedBy) {
         await this.usersRepository.updateUser(request.requestedBy.id, {
@@ -249,6 +251,7 @@ export class DashboardService {
       name: request.requestedBy?.name ?? request.name,
       status: request.status,
       message: request.message,
+      companyId: approvedCompanyId,
     });
 
     return this.toCompanyRequestResponse(request);
@@ -315,13 +318,15 @@ export class DashboardService {
       savedRequest.type === RouteRequestType.Add &&
       savedRequest.requestedBy &&
       savedRequest.origin &&
-      savedRequest.destination
+      savedRequest.destination &&
+      savedRequest.companyId
     ) {
       await this.notificationsService.sendRouteRequestApprovedEmail({
         email: savedRequest.requestedBy.email,
         name: savedRequest.requestedBy.name,
         origin: savedRequest.origin,
         destination: savedRequest.destination,
+        companyId: savedRequest.companyId,
       });
     }
 
@@ -376,6 +381,7 @@ export class DashboardService {
         destination: savedRequest.route.destination,
         departureDate: savedRequest.departureDate,
         totalSeats: savedRequest.totalSeats,
+        companyId: savedRequest.companyId,
       });
     }
 
@@ -393,6 +399,7 @@ export class DashboardService {
       name: updatedUser.name,
       role: updatedUser.role,
       previousRole: currentUser.role,
+      companyId: updatedUser.companyId,
     });
     return this.toUserResponse(updatedUser);
   }
@@ -463,7 +470,7 @@ export class DashboardService {
     return this.toRouteRequestResponse(savedRouteRequest);
   }
 
- async requestSchedule(
+  async requestSchedule(
     userId: string,
     payload: CreateScheduleRequestDto,
   ): Promise<ScheduleRequestResponseDto> {
@@ -708,24 +715,24 @@ export class DashboardService {
     };
   }
 
- private toScheduleRequestResponse(
-  request: ScheduleRequest,
-): ScheduleRequestResponseDto {
-  return {
-    id: request.id,
-    companyId: request.companyId,
-    routeId: request.routeId,
-    origin: request.route?.origin ?? '',
-    destination: request.route?.destination ?? '',
-    departureDate: request.departureDate,
-    price: Number(request.price),
-    totalSeats: request.totalSeats,
-    status: request.status,
-    createdTripId: request.createdTripId,
-    message: request.message,
-    requestedBy: request.requestedBy
-      ? this.toUserResponse(request.requestedBy)
-      : null,
-  };
-}
+  private toScheduleRequestResponse(
+    request: ScheduleRequest,
+  ): ScheduleRequestResponseDto {
+    return {
+      id: request.id,
+      companyId: request.companyId,
+      routeId: request.routeId,
+      origin: request.route?.origin ?? '',
+      destination: request.route?.destination ?? '',
+      departureDate: request.departureDate,
+      price: Number(request.price),
+      totalSeats: request.totalSeats,
+      status: request.status,
+      createdTripId: request.createdTripId,
+      message: request.message,
+      requestedBy: request.requestedBy
+        ? this.toUserResponse(request.requestedBy)
+        : null,
+    };
+  }
 }

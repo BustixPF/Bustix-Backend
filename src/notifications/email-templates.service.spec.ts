@@ -47,6 +47,7 @@ describe('EmailTemplatesService', () => {
     const html = service.render(template, variables);
 
     expect(html).not.toMatch(/\{\{[^}]+\}\}/);
+    expect(html).not.toContain('href="#"');
   });
 
   it('escapes dynamic HTML values', () => {
