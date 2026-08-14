@@ -38,18 +38,36 @@ import { AuditInterceptor } from '../auditLog/auditLog.interceptor';
 import { AuditAction } from '../auditLog/auditLog.decorator';
 import { AssignAdminDto } from '../users/dto/assign-admin.dto';
 import { UpdateCompanyActiveDto } from './dto/update-company-active.dto';
+import {
+  COMPANY_UPLOAD_TOKEN_EXPIRES_IN_SECONDS,
+  CompanyUploadTokenService,
+} from '../file-upload/company-upload-token.service';
+import { CreateCompanyResponseDto } from './dto/company.dto';
 @ApiTags('companies')
 @Controller('companies')
 export class CompaniesController {
-  constructor(private readonly companiesService: CompaniesService) {}
+  constructor(
+    private readonly companiesService: CompaniesService,
+    private readonly companyUploadTokenService: CompanyUploadTokenService,
+  ) {}
 
   @Post()
   @createCompaniesDecorator()
   @ApiBody({ type: CreateCompanyDto })
-  async create(@Body() body: CreateCompanyDto): Promise<Company> {
-    return this.withoutPassword(
+  async create(
+    @Body() body: CreateCompanyDto,
+  ): Promise<CreateCompanyResponseDto> {
+    const company = this.withoutPassword(
       await this.companiesService.createCompany(body),
     );
+
+    return {
+      ...company,
+      documentUploadToken: await this.companyUploadTokenService.issue(
+        company.id,
+      ),
+      documentUploadTokenExpiresIn: COMPANY_UPLOAD_TOKEN_EXPIRES_IN_SECONDS,
+    };
   }
 
   @Get()
@@ -79,10 +97,7 @@ export class CompaniesController {
   @Roles(Role.superAdmin, Role.Admin)
   @UseInterceptors(AuditInterceptor) // 👈 Interceptor
   @AuditAction('UPDATE_COMPANY_STATUS')
-  updateStatus(
-    @Param('id') id: string,
-    @Body() dto: UpdateCompanyStatusDto,
-  ) {
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateCompanyStatusDto) {
     return this.companiesService.updateCompanyStatus(id, dto.status);
   }
 
@@ -91,7 +106,7 @@ export class CompaniesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   @UseInterceptors(AuditInterceptor) // 👈 Agregado
-  @AuditAction('APPROVE_COMPANY')     // 👈 Agregado
+  @AuditAction('APPROVE_COMPANY') // 👈 Agregado
   @approveCompanyDecorator()
   async approve(@Param('id') id: string) {
     return this.companiesService.updateCompanyStatus(
@@ -100,12 +115,12 @@ export class CompaniesController {
     );
   }
 
- @Patch(':id/reject')
+  @Patch(':id/reject')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.superAdmin)
   @UseInterceptors(AuditInterceptor) // 👈 Agregado
-  @AuditAction('REJECT_COMPANY')      // 👈 Agregado
+  @AuditAction('REJECT_COMPANY') // 👈 Agregado
   @rejectCompanyDecorator()
   async reject(@Param('id') id: string, @Body() body: RejectCompanyDto) {
     return this.companiesService.updateCompanyStatus(
@@ -121,7 +136,9 @@ export class CompaniesController {
   @Roles(Role.superAdmin)
   @UseInterceptors(AuditInterceptor) // 👈 Agregado
   @AuditAction('ASSIGN_COMPANY_ADMIN') // 👈 Agregado
-  @ApiOperation({ summary: 'Vincular o reasignar un administrador a una empresa (SuperAdmin)' })
+  @ApiOperation({
+    summary: 'Vincular o reasignar un administrador a una empresa (SuperAdmin)',
+  })
   async assignAdmin(
     @Param('id', ParseUUIDPipe) companyId: string,
     @Body() dto: AssignAdminDto,

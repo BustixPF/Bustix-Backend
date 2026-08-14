@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Document } from './entities/file-uplaod.entity';
@@ -9,6 +14,7 @@ import {
   v2 as cloudinary,
 } from 'cloudinary';
 import { Readable } from 'stream';
+import { CompanyStatus } from '../common/company-status.enum';
 
 @Injectable()
 export class FileUploadRepository {
@@ -82,9 +88,33 @@ export class FileUploadRepository {
     if (!company) {
       throw new NotFoundException(`Empresa con id ${companyId} no encontrada`);
     }
+    return this.saveCompanyFile(file, company);
+  }
 
+  async saveRegistrationFile(
+    file: Express.Multer.File,
+    companyId: string,
+  ): Promise<Document> {
+    const company = await this.companyRepo.findOne({
+      where: { id: companyId },
+    });
+    if (!company) {
+      throw new NotFoundException(`Empresa con id ${companyId} no encontrada`);
+    }
+    if (company.status !== CompanyStatus.PENDING) {
+      throw new ForbiddenException(
+        'Solo las empresas pendientes pueden subir documentos de registro',
+      );
+    }
+
+    return this.saveCompanyFile(file, company);
+  }
+
+  private async saveCompanyFile(
+    file: Express.Multer.File,
+    company: Company,
+  ): Promise<Document> {
     const result = await this.uploadToCloudinary(file);
-
     const document = this.documentRepo.create({
       filename: file.originalname,
       url: result.secure_url,
