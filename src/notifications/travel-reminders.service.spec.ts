@@ -46,9 +46,10 @@ describe('TravelRemindersService', () => {
       save: jest.fn((delivery: NotificationDelivery) => {
         if (!delivery.id) {
           if (savedTypes.has(delivery.type)) {
-            return Promise.reject(
-              new QueryFailedError('', [], { code: '23505' }),
-            );
+            const duplicateError = Object.assign(new Error('duplicate key'), {
+              code: '23505',
+            });
+            return Promise.reject(new QueryFailedError('', [], duplicateError));
           }
           savedTypes.add(delivery.type);
           return Promise.resolve({

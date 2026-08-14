@@ -131,6 +131,7 @@ export class NotificationsService {
     destination?: string;
     routeId?: string;
     companyName?: string;
+    companyId?: string;
   }): Promise<void> {
     return this.dispatchEmail({
       to: payload.email,

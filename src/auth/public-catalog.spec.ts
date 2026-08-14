@@ -5,8 +5,16 @@ import { RoutesController } from '../routes/routes.controller';
 import { TripsController } from '../trips/trips.controller';
 
 describe('Public catalog authorization', () => {
-  const getHandler = (controller: object, methodName: string): unknown =>
-    Object.getOwnPropertyDescriptor(controller, methodName)?.value;
+  const getHandler = (controller: object, methodName: string): object => {
+    const handler: unknown = Object.getOwnPropertyDescriptor(
+      controller,
+      methodName,
+    )?.value;
+    if (typeof handler !== 'function') {
+      throw new Error(`No se encontró el método ${methodName}`);
+    }
+    return handler;
+  };
 
   it.each([
     ['companies', CompaniesController, 'findAll'],

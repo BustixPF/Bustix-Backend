@@ -466,6 +466,7 @@ export class DashboardService {
       destination: savedRouteRequest.destination,
       routeId: savedRouteRequest.routeId,
       companyName: company.name,
+      companyId: savedRouteRequest.companyId,
     });
     return this.toRouteRequestResponse(savedRouteRequest);
   }
