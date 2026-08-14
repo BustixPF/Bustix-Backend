@@ -17,6 +17,10 @@ export class FileUploadService {
     return this.fileRepo.saveFile(file, companyId);
   }
 
+  async uploadRegistrationFile(file: Express.Multer.File, companyId: string) {
+    return this.fileRepo.saveRegistrationFile(file, companyId);
+  }
+
   async getCompanyDocuments(companyId: string) {
     return this.fileRepo.findByCompany(companyId);
   }

@@ -1,7 +1,11 @@
 import { applyDecorators, HttpCode } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { Company } from './entities/company.entity';
-import { RejectCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import {
+  CreateCompanyResponseDto,
+  RejectCompanyDto,
+  UpdateCompanyDto,
+} from './dto/company.dto';
 
 export function createCompaniesDecorator() {
   return applyDecorators(
@@ -10,7 +14,7 @@ export function createCompaniesDecorator() {
     ApiResponse({
       status: 201,
       description: 'Empresa creada exitosamente',
-      type: Company,
+      type: CreateCompanyResponseDto,
     }),
     ApiResponse({
       status: 400,

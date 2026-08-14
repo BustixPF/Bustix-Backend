@@ -9,6 +9,7 @@ import {
   IsNumberString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { CompanyStatus } from '../../common/company-status.enum';
 
 export class CreateCompanyDto {
   @ApiProperty({
@@ -58,6 +59,35 @@ export class CreateCompanyDto {
   })
   @IsNotEmpty()
   confirmPassword: string;
+}
+
+export class CreateCompanyResponseDto {
+  @ApiProperty({ example: '164ea32a-2f2d-4a91-b638-c027add0345c' })
+  id: string;
+
+  @ApiProperty({ example: 'Mi Empresa S.A.' })
+  name: string;
+
+  @ApiProperty({ example: '123456789' })
+  nit: string;
+
+  @ApiProperty({ example: 'empresa@correo.com' })
+  email: string;
+
+  @ApiProperty({ example: '3001234567' })
+  phone: string;
+
+  @ApiProperty({ enum: CompanyStatus, example: CompanyStatus.PENDING })
+  status: CompanyStatus;
+
+  @ApiProperty({
+    description:
+      'Token temporal para subir documentos sin una sesión de usuario',
+  })
+  documentUploadToken: string;
+
+  @ApiProperty({ example: 1800 })
+  documentUploadTokenExpiresIn: number;
 }
 
 export class UpdateCompanyDto {

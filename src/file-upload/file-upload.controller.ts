@@ -12,20 +12,29 @@ import {
 import { MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
 import { FileUploadService } from './file-upload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+  ApiHeader,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { Role } from '../common/roles.enum';
+import { CompanyRegistrationUploadGuard } from './company-registration-upload.guard';
 
 @ApiTags('FileUpload')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('file-upload')
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('company/:companyId')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -58,8 +67,56 @@ export class FileUploadController {
     return this.fileUploadService.uploadFile(file, companyId);
   }
 
+  @Post('company/:companyId/registration')
+  @UseGuards(CompanyRegistrationUploadGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Subir un documento durante el registro de una empresa',
+    description:
+      'No requiere sesión. Usa el token temporal entregado por POST /companies.',
+  })
+  @ApiHeader({
+    name: 'X-Company-Upload-Token',
+    description: 'Token temporal y exclusivo de la empresa recién creada',
+    required: true,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Documento subido correctamente' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token temporal ausente, inválido o expirado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'La empresa ya no está pendiente de aprobación',
+  })
+  async uploadCompanyRegistrationFile(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5000000 }),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf|docx)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Param('companyId') companyId: string,
+  ) {
+    return this.fileUploadService.uploadRegistrationFile(file, companyId);
+  }
+
   // Actualización de foto de perfil del usuario
   @Post('user/:userId/profile-picture')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
